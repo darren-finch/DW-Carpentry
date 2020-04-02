@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "837213649099",
+    "firebase_url": "https://dc-carpentry-b7864.firebaseio.com",
+    "project_id": "dc-carpentry-b7864",
+    "storage_bucket": "dc-carpentry-b7864.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:837213649099:android:b820b35e2f760d5116834e",
+        "android_client_info": {
+          "package_name": "com.all.dwcarpentry"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "837213649099-46beija5q4dadd7ann7qlj1pnhu1vt2s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-TWXZzxTLFwHcU-FazYze851u51zXc_s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "837213649099-46beija5q4dadd7ann7qlj1pnhu1vt2s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
