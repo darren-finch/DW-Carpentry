@@ -1,15 +1,17 @@
 package com.all.dwcarpentry.helpers
 
 import android.content.Context
+import androidx.lifecycle.ViewModelProviders
+import com.all.dwcarpentry.MainViewModel
 import com.all.dwcarpentry.MainViewModelFactory
 import com.all.dwcarpentry.data.HouseRepository
-import com.all.dwcarpentry.data.room.HouseDatabase
 
 object InjectionUtils
 {
-    fun provideMainViewModelFactory(context: Context) : MainViewModelFactory
+    private val repository: HouseRepository = HouseRepository()
+
+    fun provideMainViewModelFactory() : MainViewModelFactory
     {
-        val repo = HouseRepository(HouseDatabase.getInstance(context))
-        return MainViewModelFactory(repo)
+        return MainViewModelFactory(repository)
     }
 }

@@ -25,7 +25,7 @@ class HousesRecyclerViewAdapter(private val allHouses: MutableList<House>,
     override fun onBindViewHolder(holder: HouseViewHolder, position: Int)
     {
         val house = allHouses[position]
-        holder.houseKey = house.key
+        holder.house = house
         holder.homeOwnerName.text = "Home Owner - " + house.homeOwnerName
         holder.homeAddress.text = "Address - " + house.homeAddress
     }
@@ -40,6 +40,6 @@ class HousesRecyclerViewAdapter(private val allHouses: MutableList<House>,
 
     interface OnHouseCardClickedListener
     {
-        fun onHouseCardClicked(houseKey: String)
+        fun onHouseCardClicked(house: House)
     }
 }

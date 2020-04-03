@@ -3,7 +3,9 @@ package com.all.dwcarpentry
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProviders
+import com.all.dwcarpentry.data.House
 import com.all.dwcarpentry.fragments.AddEditHouseFragment
 import com.all.dwcarpentry.fragments.AllHousesFragment
 import com.all.dwcarpentry.fragments.RequireActivityFragment
@@ -17,24 +19,20 @@ class MainActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-        val factory = InjectionUtils.provideMainViewModelFactory(this)
+        val factory = InjectionUtils.provideMainViewModelFactory()
         viewModel = ViewModelProviders.of(this, factory).get(MainViewModel::class.java)
 
         if (savedInstanceState == null)
         {
-            goToFragment(AllHousesFragment(this))
+            goToFragment(AllHousesFragment(this), false)
         }
     }
 
-    private fun goToFragment(fragment: RequireActivityFragment)
+    fun goToFragment(fragment: RequireActivityFragment, addToBackStack: Boolean = true, fragmentTag: String = "")
     {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, fragment)
-            .commitNow()
-    }
-
-    fun viewHouse(houseKey: String)
-    {
-        goToFragment(AddEditHouseFragment(this, houseKey))
+        val transaction = supportFragmentManager.beginTransaction()
+        if(addToBackStack)
+            transaction.addToBackStack(fragmentTag)
+        transaction.replace(R.id.container, fragment).commit()
     }
 }

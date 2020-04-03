@@ -43,14 +43,13 @@
 <!--        app:layout_constraintEnd_toEndOf="@+id/housesRecyclerView"-->
 <!--        app:layout_constraintStart_toStartOf="@+id/housesRecyclerView"-->
 <!--        app:layout_constraintTop_toTopOf="@+id/housesRecyclerView"-->
-<!--        tools:layout="@layout/loading_fragment" />-->
+<!--        tools:layout="@layout/uploading_images_fragment" />-->
     <LinearLayout
         android:id="@+id/loadingLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
-        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -68,7 +67,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Loading Houses"
+            android:text="Loading Houses..."
             android:textAppearance="@style/TextAppearance.AppCompat.Large" />
     </LinearLayout>
 
@@ -83,7 +82,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/addHouse"
+        android:id="@+id/add_house_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
