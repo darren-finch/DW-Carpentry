@@ -12,6 +12,11 @@ object InjectionUtils
 
     fun provideMainViewModelFactory() : MainViewModelFactory
     {
+        println("debug: Repository = $repository")
         return MainViewModelFactory(repository)
     }
+//    fun reInitRepository()
+//    {
+//        repository = HouseRepository()
+//    }
 }

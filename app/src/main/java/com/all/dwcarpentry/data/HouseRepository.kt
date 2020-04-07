@@ -75,7 +75,10 @@ class HouseRepository()
                 e.printStackTrace()
             }
         }
-        //TODO(): Remove images from ImageCache
+        for(url in deletedHomeImageUrls)
+        {
+            ImageCache.removeImage(url)
+        }
     }
     //endregion
     //region Firebase Database Operations
@@ -106,9 +109,31 @@ class HouseRepository()
         return houses
     }
 
-    suspend fun getHouseImages(imageUrls: List<String>) : List<Bitmap>
+    suspend fun downloadHouseImages(imageUrls: List<String>) : List<Bitmap>
     {
-        return ImageDownloader.downloadImages(imageUrls)
+        var bitmaps = listOf<Bitmap>()
+        try
+        {
+            bitmaps = ImageDownloader.downloadHouseImages(imageUrls)
+        }
+        catch(e: Exception)
+        {
+            e.printStackTrace()
+        }
+        return bitmaps
+    }
+    suspend fun downloadCoverImages(houseKeys: List<String>, imagesUrls: List<String>) : HashMap<String, Bitmap>
+    {
+        var bitmaps = hashMapOf<String,Bitmap>()
+        try
+        {
+            bitmaps = ImageDownloader.downloadCoverImages(houseKeys, imagesUrls)
+        }
+        catch(e: Exception)
+        {
+            e.printStackTrace()
+        }
+        return bitmaps
     }
 
     fun insertHouse(newHouse: House)
@@ -131,8 +156,15 @@ class HouseRepository()
             override fun onChildAdded(p0: DataSnapshot, p1: String?)
             {
                 if(!p0.exists()) return
-                val storageRef = firebaseStorageRef.child(p0.value.toString())
-                storageRef.delete()
+                try
+                {
+                    val storageRef = firebaseStorageRef.child(p0.value.toString())
+                    storageRef.delete()
+                }
+                catch (e: Exception)
+                {
+                    e.printStackTrace()
+                }
             }
         })
         firebaseDatabaseRef.child(houseKey).removeValue()

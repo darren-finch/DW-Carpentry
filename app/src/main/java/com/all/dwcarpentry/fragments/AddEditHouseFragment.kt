@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.*
-import android.widget.Toast
 import androidx.lifecycle.ViewModelProviders
 import com.all.dwcarpentry.MainActivity
 import com.all.dwcarpentry.MainViewModel
@@ -16,10 +15,9 @@ import com.all.dwcarpentry.helpers.Constants
 import com.all.dwcarpentry.helpers.InjectionUtils
 import kotlinx.coroutines.*
 
-class AddEditHouseFragment(private val mainActivity: MainActivity, private val houseData: House) : RequireActivityFragment(mainActivity)
+class AddEditHouseFragment(private val mainActivity: MainActivity, private val houseData: House) : BaseFragment(mainActivity)
 {
     //Data
-    private lateinit var viewModel: MainViewModel
     private var houseImages = mutableListOf<Bitmap>()
     private var isNewImageList = mutableListOf<Boolean>()
     private var deletedHouseImageUrls = mutableListOf<String>()
@@ -40,7 +38,6 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
     {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        viewModel = ViewModelProviders.of(this, InjectionUtils.provideMainViewModelFactory()).get(MainViewModel::class.java)
         if(houseData.homeImagesUrls.size > 0)
             loadImages()
     }
@@ -85,6 +82,7 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
     override fun onDestroyView()
     {
         super.onDestroyView()
+//        parentJob.cancel()
         _binding = null
     }
 
@@ -100,8 +98,8 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
         isNewImageList.removeAt(i)
         if (!isNewImage)
         {
-            val imageUrl = houseData?.homeImagesUrls[i]
-            val imageName = houseData?.homeImagesNames[i]
+            val imageUrl = houseData.homeImagesUrls[i]
+            val imageName = houseData.homeImagesNames[i]
             deletedHouseImageUrls.add(imageUrl)
             deletedHouseImageNames.add(imageName)
             houseData.homeImagesUrls.remove(imageUrl)
@@ -115,8 +113,8 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
             houseImages.clear()
             isNewImageList.clear()
 
-            houseImages.addAll(viewModel.getHouseImages(houseData.homeImagesUrls) as MutableList<Bitmap>)
-            for(i in 0 until houseImages.size)
+            houseImages.addAll(viewModel.downloadHouseImages(houseData.homeImagesUrls) as MutableList<Bitmap>)
+            for(i in houseImages.indices)
                 isNewImageList.add(false)
 
             withContext(Dispatchers.Main)
@@ -137,7 +135,7 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
             removeHouseImage()
         }
         if(houseData.homeImagesUrls.size < 1) binding.noImagesLayout.visibility = View.VISIBLE else binding.noImagesLayout.visibility = View.GONE
-        if(houseData.homeImagesUrls.size < 1) binding.imagesLoadingLayout.visibility = View.GONE else binding.noImagesLayout.visibility = View.VISIBLE
+        if(houseData.homeImagesUrls.size < 1) binding.imagesLoadingLayout.visibility = View.GONE else binding.imagesLoadingLayout.visibility = View.VISIBLE
     }
     private fun setupCarousel()
     {
@@ -150,7 +148,7 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
     private fun saveHouse()
     {
         val newHouseImages = mutableListOf<Bitmap>()
-        for(i in 0 until houseImages.size)
+        for(i in houseImages.indices)
         {
             if(isNewImageList[i])
                 newHouseImages.add(houseImages[i])

@@ -17,9 +17,13 @@ class MainViewModel(private val repo: HouseRepository) : ViewModel()
     {
         return repo.getHouses()
     }
-    suspend fun getHouseImages(imageUrls: List<String>) : List<Bitmap>
+    suspend fun downloadHouseImages(imageUrls: List<String>) : List<Bitmap>
     {
-        return repo.getHouseImages(imageUrls)
+        return repo.downloadHouseImages(imageUrls)
+    }
+    suspend fun downloadCoverImages(houseKeys: List<String>, imagesUrls: List<String>) : HashMap<String, Bitmap>
+    {
+        return repo.downloadCoverImages(houseKeys, imagesUrls)
     }
 
     fun insertHouse(newHouse: House)

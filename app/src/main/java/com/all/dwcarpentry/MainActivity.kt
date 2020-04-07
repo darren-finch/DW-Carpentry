@@ -2,13 +2,9 @@ package com.all.dwcarpentry
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProviders
-import com.all.dwcarpentry.data.House
-import com.all.dwcarpentry.fragments.AddEditHouseFragment
 import com.all.dwcarpentry.fragments.AllHousesFragment
-import com.all.dwcarpentry.fragments.RequireActivityFragment
+import com.all.dwcarpentry.fragments.BaseFragment
 import com.all.dwcarpentry.helpers.InjectionUtils
 
 class MainActivity : AppCompatActivity()
@@ -28,7 +24,7 @@ class MainActivity : AppCompatActivity()
         }
     }
 
-    fun goToFragment(fragment: RequireActivityFragment, addToBackStack: Boolean = true, fragmentTag: String = "")
+    fun goToFragment(fragment: BaseFragment, addToBackStack: Boolean = true, fragmentTag: String = "")
     {
         val transaction = supportFragmentManager.beginTransaction()
         if(addToBackStack)
