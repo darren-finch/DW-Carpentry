@@ -1,18 +1,18 @@
-package com.all.dwcarpentry.fragments
+package com.all.dwcarpentry.ui.fragments
 
+import android.accounts.NetworkErrorException
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.*
-import androidx.lifecycle.ViewModelProviders
 import com.all.dwcarpentry.MainActivity
-import com.all.dwcarpentry.MainViewModel
 import com.all.dwcarpentry.R
 import com.all.dwcarpentry.data.House
 import com.all.dwcarpentry.databinding.AddEditHouseFragmentBinding
 import com.all.dwcarpentry.helpers.Constants
-import com.all.dwcarpentry.helpers.InjectionUtils
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.FutureTarget
 import kotlinx.coroutines.*
 
 class AddEditHouseFragment(private val mainActivity: MainActivity, private val houseData: House) : BaseFragment(mainActivity)
@@ -20,7 +20,6 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
     //Data
     private var houseImages = mutableListOf<Bitmap>()
     private var isNewImageList = mutableListOf<Boolean>()
-    private var deletedHouseImageUrls = mutableListOf<String>()
     private var deletedHouseImageNames = mutableListOf<String>()
 
     //UI Properties
@@ -82,7 +81,7 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
     override fun onDestroyView()
     {
         super.onDestroyView()
-//        parentJob.cancel()
+        parentJob.cancel()
         _binding = null
     }
 
@@ -100,7 +99,6 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
         {
             val imageUrl = houseData.homeImagesUrls[i]
             val imageName = houseData.homeImagesNames[i]
-            deletedHouseImageUrls.add(imageUrl)
             deletedHouseImageNames.add(imageName)
             houseData.homeImagesUrls.remove(imageUrl)
             houseData.homeImagesNames.remove(imageName)
@@ -110,10 +108,22 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
     private fun loadImages()
     {
         CoroutineScope(Dispatchers.IO + parentJob).launch{
-            houseImages.clear()
+            houseImages.clear() //TODO: If we ever create a refresh button, when loading images,
+                                // clearing the entire house image list will erase all newly added images that haven't been uploaded yet. Change this.
             isNewImageList.clear()
+            try
+            {
+                for(imageUrl in houseData.homeImagesUrls)
+                {
+                    val futureTarget = Glide.with(this@AddEditHouseFragment).asBitmap().load(imageUrl).submit()
+                    houseImages.add(futureTarget.get())
+                }
+            }
+            catch (e: java.lang.Exception)
+            {
+                e.printStackTrace()
+            }
 
-            houseImages.addAll(viewModel.downloadHouseImages(houseData.homeImagesUrls) as MutableList<Bitmap>)
             for(i in houseImages.indices)
                 isNewImageList.add(false)
 
@@ -142,7 +152,6 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
         binding.homeImageCarousel.stopCarousel()
         binding.homeImageCarousel.setImageListener { position, imageView -> imageView.setImageBitmap(houseImages[position]) }
         binding.homeImageCarousel.pageCount = houseImages.size
-
         binding.imagesLoadingLayout.visibility = View.GONE
     }
     private fun saveHouse()
@@ -153,16 +162,21 @@ class AddEditHouseFragment(private val mainActivity: MainActivity, private val h
             if(isNewImageList[i])
                 newHouseImages.add(houseImages[i])
         }
-
         houseData.homeOwnerName = binding.homeOwnerEditText.text.toString()
         houseData.homeAddress = binding.homeAddressEditText.text.toString()
         houseData.materialsUsed = binding.materialsUsedEditText.text.toString()
-        viewModel.updateHouse(houseData, mutableListOf(), mutableListOf())
+        viewModel.updateHouse(houseData, deletedHouseImageNames)
         mainActivity.goToFragment(UploadingImagesFragment(mainActivity, newHouseImages, houseData.key), false)
     }
     private fun deleteHouse()
     {
         viewModel.deleteHouse(houseData.key)
         mainActivity.goToFragment(AllHousesFragment(mainActivity), false)
+    }
+
+    override fun onDetach()
+    {
+        super.onDetach()
+
     }
 }

@@ -1,4 +1,4 @@
-package com.all.dwcarpentry.recyclerviews
+package com.all.dwcarpentry.ui.recyclerviews
 
 import android.graphics.Rect
 import android.view.View

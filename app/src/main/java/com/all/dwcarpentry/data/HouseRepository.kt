@@ -61,7 +61,7 @@ class HouseRepository()
             e.printStackTrace()
         }
     }
-    private fun deleteHouseImagesFromStorage(deletedHomeImageUrls: List<String>, deletedHomeImageNames: List<String>)
+    private fun deleteHouseImagesFromStorage(deletedHomeImageNames: List<String>)
     {
         for(uuid in deletedHomeImageNames)
         {
@@ -74,10 +74,6 @@ class HouseRepository()
             {
                 e.printStackTrace()
             }
-        }
-        for(url in deletedHomeImageUrls)
-        {
-            ImageCache.removeImage(url)
         }
     }
     //endregion
@@ -108,44 +104,16 @@ class HouseRepository()
         }
         return houses
     }
-
-    suspend fun downloadHouseImages(imageUrls: List<String>) : List<Bitmap>
-    {
-        var bitmaps = listOf<Bitmap>()
-        try
-        {
-            bitmaps = ImageDownloader.downloadHouseImages(imageUrls)
-        }
-        catch(e: Exception)
-        {
-            e.printStackTrace()
-        }
-        return bitmaps
-    }
-    suspend fun downloadCoverImages(houseKeys: List<String>, imagesUrls: List<String>) : HashMap<String, Bitmap>
-    {
-        var bitmaps = hashMapOf<String,Bitmap>()
-        try
-        {
-            bitmaps = ImageDownloader.downloadCoverImages(houseKeys, imagesUrls)
-        }
-        catch(e: Exception)
-        {
-            e.printStackTrace()
-        }
-        return bitmaps
-    }
-
     fun insertHouse(newHouse: House)
     {
         val ref = firebaseDatabaseRef.push()
         newHouse.key = ref.key.toString()
         ref.setValue(newHouse)
     }
-    fun updateHouse(newData: House, deletedHomeImageUrls: List<String>, deletedHomeImageNames: List<String>)
+    fun updateHouse(newData: House, deletedHomeImageNames: List<String>)
     {
         firebaseDatabaseRef.child(newData.key).setValue(newData)
-        deleteHouseImagesFromStorage(deletedHomeImageUrls, deletedHomeImageNames)
+        deleteHouseImagesFromStorage(deletedHomeImageNames)
     }
     fun deleteHouse(houseKey: String)
     {

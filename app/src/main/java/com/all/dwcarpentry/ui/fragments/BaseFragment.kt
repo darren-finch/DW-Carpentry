@@ -1,4 +1,4 @@
-package com.all.dwcarpentry.fragments
+package com.all.dwcarpentry.ui.fragments
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

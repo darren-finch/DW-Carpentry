@@ -1,13 +1,12 @@
-package com.all.dwcarpentry.recyclerviews
+package com.all.dwcarpentry.ui.recyclerviews
 
 import android.view.View
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.all.dwcarpentry.R
 import com.all.dwcarpentry.data.House
-import com.all.dwcarpentry.recyclerviews.HousesRecyclerViewAdapter.*
+import com.all.dwcarpentry.ui.recyclerviews.HousesRecyclerViewAdapter.*
 
 class HouseViewHolder(itemView: View, onHouseCardClickedListener: OnHouseCardClickedListener) : RecyclerView.ViewHolder(itemView)
 {

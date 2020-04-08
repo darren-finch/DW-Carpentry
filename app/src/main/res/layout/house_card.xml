@@ -15,37 +15,11 @@
             android:id="@+id/houseImage"
             android:layout_width="match_parent"
             android:layout_height="250dp"
-            android:background="#CCCCCC"
+            android:background="@color/colorPrimary"
             android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/imageDownloadStatusTextView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="No Images Available."
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="@+id/houseImage"
-            app:layout_constraintEnd_toEndOf="@+id/houseImage"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageDownloadingProgressBar2"
-            app:layout_constraintVertical_bias="0.0" />
-
-        <ProgressBar
-            android:id="@+id/imageDownloadingProgressBar2"
-            style="?android:attr/progressBarStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:indeterminateDrawable="@drawable/progress"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="@+id/houseImage"
-            app:layout_constraintEnd_toEndOf="@+id/houseImage"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/houseImage" />
 
         <TextView
             android:id="@+id/homeOwner"

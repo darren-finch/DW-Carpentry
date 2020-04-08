@@ -1,15 +1,12 @@
-package com.all.dwcarpentry.fragments
+package com.all.dwcarpentry.ui.fragments
 
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProviders
 import com.all.dwcarpentry.MainActivity
-import com.all.dwcarpentry.MainViewModel
 import com.all.dwcarpentry.R
-import com.all.dwcarpentry.helpers.InjectionUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

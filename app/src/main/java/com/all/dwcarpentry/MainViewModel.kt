@@ -12,27 +12,17 @@ class MainViewModel(private val repo: HouseRepository) : ViewModel()
     {
         repo.uploadHouseImages(images, houseKey)
     }
-
     fun getHouses() : LiveData<MutableList<House>>
     {
         return repo.getHouses()
     }
-    suspend fun downloadHouseImages(imageUrls: List<String>) : List<Bitmap>
-    {
-        return repo.downloadHouseImages(imageUrls)
-    }
-    suspend fun downloadCoverImages(houseKeys: List<String>, imagesUrls: List<String>) : HashMap<String, Bitmap>
-    {
-        return repo.downloadCoverImages(houseKeys, imagesUrls)
-    }
-
     fun insertHouse(newHouse: House)
     {
         repo.insertHouse(newHouse)
     }
-    fun updateHouse(newData: House, deletedImageUrls: List<String>, deletedImageNames: List<String>)
+    fun updateHouse(newData: House, deletedImageNames: List<String>)
     {
-        repo.updateHouse(newData, deletedImageUrls, deletedImageNames)
+        repo.updateHouse(newData, deletedImageNames)
     }
     fun deleteHouse(houseKey: String)
     {
