@@ -16,6 +16,10 @@ class MainViewModel(private val repo: HouseRepository) : ViewModel()
     {
         return repo.getHouses()
     }
+    fun getHouse(houseKey: String) : LiveData<House>
+    {
+        return repo.getHouse(houseKey)
+    }
     fun insertHouse(newHouse: House)
     {
         repo.insertHouse(newHouse)

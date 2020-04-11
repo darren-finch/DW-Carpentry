@@ -31,7 +31,7 @@ class HousesRecyclerViewAdapter(private val fragment: Fragment, private val allH
     override fun onBindViewHolder(holder: HouseViewHolder, position: Int)
     {
         val house = allHousesFiltered[position]
-        holder.house = house
+        holder.houseKey = house.key
         holder.homeOwnerName.text = "Home Owner - " + house.homeOwnerName
         holder.homeAddress.text = "Address - " + house.homeAddress
         if(house.homeImagesUrls.size > 0 && house.homeImagesUrls[0].isNotEmpty())
@@ -45,7 +45,7 @@ class HousesRecyclerViewAdapter(private val fragment: Fragment, private val allH
     }
     interface OnHouseCardClickedListener
     {
-        fun onHouseCardClicked(house: House)
+        fun onHouseCardClicked(houseKey: String)
     }
     override fun getFilter(): Filter
     {
@@ -57,7 +57,6 @@ class HousesRecyclerViewAdapter(private val fragment: Fragment, private val allH
                 if(query.isEmpty())
                 {
                     allHousesFiltered = allHouses
-                    println("WTF 1")
                 }
                 else
                 {
@@ -67,7 +66,6 @@ class HousesRecyclerViewAdapter(private val fragment: Fragment, private val allH
                         if(house.homeOwnerName.toLowerCase(Locale.ROOT).startsWith(query) || house.homeAddress.toLowerCase(Locale.ROOT).startsWith(query))
                         {
                             resultList.add(house)
-                            println("WTF 2")
                         }
                     }
                     allHousesFiltered = resultList

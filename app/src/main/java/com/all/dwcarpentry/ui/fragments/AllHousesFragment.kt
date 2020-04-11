@@ -3,35 +3,38 @@ package com.all.dwcarpentry.ui.fragments
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.all.dwcarpentry.MainActivity
+import com.all.dwcarpentry.MainViewModel
 import com.all.dwcarpentry.R
-import com.all.dwcarpentry.data.House
 import com.all.dwcarpentry.databinding.AllHousesFragmentBinding
+import com.all.dwcarpentry.helpers.InjectionUtils
 import com.all.dwcarpentry.ui.recyclerviews.HousesRecyclerViewAdapter
 import com.all.dwcarpentry.ui.recyclerviews.HousesRecyclerViewAdapter.OnHouseCardClickedListener
 import com.all.dwcarpentry.ui.recyclerviews.MarginItemDecoration
-import kotlinx.coroutines.*
 
-class AllHousesFragment(private val mainActivity: MainActivity) : BaseFragment(mainActivity)
+class AllHousesFragment : Fragment()
 {
-    private lateinit var housesRecyclerViewAdapter: HousesRecyclerViewAdapter
-
+    //UI Stuff
     private var _binding: AllHousesFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private var isDownloadingImages = false
-
-    private val parentJob = Job()
+    private lateinit var housesRecyclerViewAdapter: HousesRecyclerViewAdapter
 
     //region Listeners
     private val onHouseCardClickedListener = object : OnHouseCardClickedListener
     {
-        override fun onHouseCardClicked(house: House)
+        override fun onHouseCardClicked(houseKey: String)
         {
-            mainActivity.goToFragment(AddEditHouseFragment(mainActivity, house))
+            navigateToAddEditHouseFragment(houseKey)
         }
+    }
+    private val onAddHouseFabClicked = View.OnClickListener{
+        navigateToAddEditHouseFragment("")
     }
     //endregion
 
@@ -42,7 +45,6 @@ class AllHousesFragment(private val mainActivity: MainActivity) : BaseFragment(m
         _binding = AllHousesFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
-
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
@@ -51,26 +53,12 @@ class AllHousesFragment(private val mainActivity: MainActivity) : BaseFragment(m
     override fun onActivityCreated(savedInstanceState: Bundle?)
     {
         super.onActivityCreated(savedInstanceState)
+        val viewModel = ViewModelProviders.of(requireActivity(), InjectionUtils.provideMainViewModelFactory()).get(MainViewModel::class.java)
         viewModel.getHouses().observe(viewLifecycleOwner, Observer{ houses ->
             housesRecyclerViewAdapter.updateHouses(houses)
             postUpdateHouses(houses.size < 1)
         })
         initUI()
-    }
-    private fun initUI()
-    {
-        housesRecyclerViewAdapter = HousesRecyclerViewAdapter(this, mutableListOf(), onHouseCardClickedListener)
-        binding.housesRecyclerView.adapter = housesRecyclerViewAdapter
-        binding.housesRecyclerView.addItemDecoration(MarginItemDecoration(16))
-        binding.housesRecyclerView.layoutManager = LinearLayoutManager(context)
-        binding.addHouseFab.setOnClickListener{
-            viewModel.insertHouse(House("", "No Homeowner", "123 Default Road", "5 - 2x4", mutableListOf(), mutableListOf()))
-        }
-    }
-    private fun postUpdateHouses(noHouses: Boolean)
-    {
-        binding.loadingLayout.visibility = View.GONE
-        if(noHouses) binding.noHousesLayout.visibility = View.VISIBLE else binding.noHousesLayout.visibility = View.GONE
     }
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
@@ -84,11 +72,33 @@ class AllHousesFragment(private val mainActivity: MainActivity) : BaseFragment(m
             }
         })
     }
-
     override fun onDestroyView()
     {
         super.onDestroyView()
-//        parentJob.cancel()
         _binding = null
+    }
+
+    private fun initUI()
+    {
+        housesRecyclerViewAdapter = HousesRecyclerViewAdapter(this, mutableListOf(), onHouseCardClickedListener)
+        binding.housesRecyclerView.adapter = housesRecyclerViewAdapter
+        binding.housesRecyclerView.addItemDecoration(MarginItemDecoration(16))
+        binding.housesRecyclerView.layoutManager = LinearLayoutManager(context)
+        binding.addHouseFab.setOnClickListener{
+            onAddHouseFabClicked.onClick(view)
+        }
+    }
+    private fun postUpdateHouses(noHouses: Boolean)
+    {
+        binding.loadingLayout.visibility = View.GONE
+        if(noHouses) binding.noHousesLayout.visibility = View.VISIBLE else binding.noHousesLayout.visibility = View.GONE
+    }
+    private fun navigateToAddEditHouseFragment(houseKey: String)
+    {
+        if(view != null)
+        {
+            val direction = AllHousesFragmentDirections.toAddEditHouseFragment(houseKey)
+            view!!.findNavController().navigate(direction)
+        }
     }
 }

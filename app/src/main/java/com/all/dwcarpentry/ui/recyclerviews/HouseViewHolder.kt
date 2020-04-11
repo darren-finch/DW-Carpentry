@@ -10,7 +10,7 @@ import com.all.dwcarpentry.ui.recyclerviews.HousesRecyclerViewAdapter.*
 
 class HouseViewHolder(itemView: View, onHouseCardClickedListener: OnHouseCardClickedListener) : RecyclerView.ViewHolder(itemView)
 {
-    lateinit var house: House //Initialized in HousesRecyclerViewAdapter
+    lateinit var houseKey: String //Initialized in HousesRecyclerViewAdapter
     val homeOwnerName: TextView = itemView.findViewById(R.id.homeOwner)
     val homeAddress: TextView = itemView.findViewById(R.id.homeAddress)
     val houseImage: ImageView = itemView.findViewById(R.id.houseImage)
@@ -22,7 +22,7 @@ class HouseViewHolder(itemView: View, onHouseCardClickedListener: OnHouseCardCli
         onClickListener = View.OnClickListener {
             val index = adapterPosition
             if (index != RecyclerView.NO_POSITION) onHouseCardClickedListener.onHouseCardClicked(
-                house)
+                houseKey)
         }
 //        viewHouse.setOnClickListener(onClickListener)
         itemView.setOnClickListener(onClickListener)

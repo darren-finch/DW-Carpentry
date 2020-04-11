@@ -24,7 +24,9 @@ class HouseRepository()
 {
     private val firebaseDatabaseRef = FirebaseDatabase.getInstance().reference.child("houses")
     private val firebaseStorageRef = FirebaseStorage.getInstance().reference.child("images/all")
+
     private val allHousesMutable: MutableLiveData<MutableList<House>> = MutableLiveData()
+    private val curHouse: MutableLiveData<House> = MutableLiveData()
 
     //region Firebase Storage
     suspend fun uploadHouseImages(images: List<Bitmap>, houseKey: String)
@@ -90,6 +92,18 @@ class HouseRepository()
         })
         return allHousesMutable
     }
+    fun getHouse(houseKey: String) : LiveData<House>
+    {
+        firebaseDatabaseRef.child(houseKey).addValueEventListener(object : ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) {}
+            override fun onDataChange(p0: DataSnapshot)
+            {
+                if(p0.exists())
+                    curHouse.postValue(p0.getValue(House::class.java))
+            }
+        })
+        return curHouse
+    }
     private fun toHouses(snapshot: DataSnapshot): MutableList<House>
     {
         val houses = mutableListOf<House>()
@@ -112,6 +126,9 @@ class HouseRepository()
     }
     fun updateHouse(newData: House, deletedHomeImageNames: List<String>)
     {
+        if(newData.key.isEmpty())
+            newData.key = UUID.randomUUID().toString()
+
         firebaseDatabaseRef.child(newData.key).setValue(newData)
         deleteHouseImagesFromStorage(deletedHomeImageNames)
     }

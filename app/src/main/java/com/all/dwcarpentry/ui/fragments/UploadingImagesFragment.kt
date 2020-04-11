@@ -1,22 +1,25 @@
 package com.all.dwcarpentry.ui.fragments
 
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.all.dwcarpentry.MainActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.navArgs
+import com.all.dwcarpentry.MainViewModel
 import com.all.dwcarpentry.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import com.all.dwcarpentry.helpers.InjectionUtils
 import kotlinx.coroutines.launch
 
-class UploadingImagesFragment(private val mainActivity: MainActivity,
-                              private val imagesToUpload: MutableList<Bitmap>,
-                              private val houseKey: String) : BaseFragment(mainActivity)
+class UploadingImagesFragment : Fragment()
 {
-    private val parentJob = Job()
+    private val args: UploadingImagesFragmentArgs by navArgs()
+    private val viewModel: MainViewModel by viewModels {
+        InjectionUtils.provideMainViewModelFactory()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,17 +29,31 @@ class UploadingImagesFragment(private val mainActivity: MainActivity,
         return inflater.inflate(R.layout.uploading_images_fragment, container, false)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?)
+    override fun onActivityCreated(savedInstanceState: Bundle?)
     {
-        super.onCreate(savedInstanceState)
-        CoroutineScope(Dispatchers.IO + parentJob).launch{
+        super.onActivityCreated(savedInstanceState)
+        if (args.imagesToUpload.isEmpty())
+        {
+            navigateToAllHousesFragment()
+            return
+        }
+        lifecycleScope.launch{
             uploadHouseImages()
         }
     }
 
     private suspend fun uploadHouseImages()
     {
-        viewModel.uploadHouseImages(imagesToUpload, houseKey)
-        mainActivity.goToFragment(AllHousesFragment(mainActivity), false)
+        viewModel.uploadHouseImages(args.imagesToUpload.toList(), args.houseKey)
+        navigateToAllHousesFragment()
+    }
+
+    private fun navigateToAllHousesFragment()
+    {
+        if(view != null)
+        {
+            val direction = UploadingImagesFragmentDirections.toAllHousesFragment()
+            view!!.findNavController().navigate(direction)
+        }
     }
 }
