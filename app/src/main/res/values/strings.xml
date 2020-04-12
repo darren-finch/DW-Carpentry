@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DW Carpentry</string>
+    <string name="homeOwnerName">Home Owner Name</string>
+    <string name="homeAddress">Lot Number/Address</string>
 </resources>

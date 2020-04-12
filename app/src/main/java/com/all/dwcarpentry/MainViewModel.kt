@@ -20,9 +20,9 @@ class MainViewModel(private val repo: HouseRepository) : ViewModel()
     {
         return repo.getHouse(houseKey)
     }
-    fun insertHouse(newHouse: House)
+    fun insertHouse(newHouse: House) : String
     {
-        repo.insertHouse(newHouse)
+        return repo.insertHouse(newHouse)
     }
     fun updateHouse(newData: House, deletedImageNames: List<String>)
     {

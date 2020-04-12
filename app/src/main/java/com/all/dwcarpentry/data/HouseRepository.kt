@@ -69,7 +69,7 @@ class HouseRepository()
         {
             try
             {
-                if(uuid.isEmpty())
+                if(uuid.isNotEmpty())
                     deleteImageFromStorage(uuid)
             }
             catch (e: Exception)
@@ -118,11 +118,12 @@ class HouseRepository()
         }
         return houses
     }
-    fun insertHouse(newHouse: House)
+    fun insertHouse(newHouse: House) : String
     {
         val ref = firebaseDatabaseRef.push()
         newHouse.key = ref.key.toString()
         ref.setValue(newHouse)
+        return ref.key.toString()
     }
     fun updateHouse(newData: House, deletedHomeImageNames: List<String>)
     {
@@ -156,7 +157,12 @@ class HouseRepository()
     }
     private fun insertHouseImagesIntoDB(houseKey: String, imageUrls: List<String>, imageNames: List<String>)
     {
-        println("debug: Inserting imageUrls and imageNames into Firebase Database.")
+        if(houseKey.isEmpty())
+        {
+            println("No house key passed to insertHouseImagesIntoDB()!")
+            return
+        }
+
         val houseRef = firebaseDatabaseRef.child(houseKey)
         houseRef.addValueEventListener(object : ValueEventListener
         {

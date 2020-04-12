@@ -33,7 +33,7 @@ class HousesRecyclerViewAdapter(private val fragment: Fragment, private val allH
         val house = allHousesFiltered[position]
         holder.houseKey = house.key
         holder.homeOwnerName.text = "Home Owner - " + house.homeOwnerName
-        holder.homeAddress.text = "Address - " + house.homeAddress
+        holder.homeAddress.text = "Lot Number/Address - " + house.homeAddress
         if(house.homeImagesUrls.size > 0 && house.homeImagesUrls[0].isNotEmpty())
             Glide.with(fragment).asBitmap().load(house.homeImagesUrls[0]).into(holder.houseImage)
     }
