@@ -106,16 +106,16 @@
 
                 <ImageView
                     android:id="@+id/addImageButton"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:scaleType="fitCenter"
                     android:tint="#FFF"
                     app:srcCompat="@drawable/ic_add" />
 
                 <ImageView
                     android:id="@+id/removeImageButton"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:scaleType="fitCenter"
                     android:tint="#FFF"
                     app:srcCompat="@drawable/ic_remove" />
