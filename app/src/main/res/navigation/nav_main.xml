@@ -15,7 +15,9 @@
             app:argType="string" />
         <action
             android:id="@+id/toUploadingImagesFragment"
-            app:destination="@id/uploadingImagesFragment" />
+            app:destination="@id/uploadingImagesFragment"
+            app:popUpTo="@id/nav_main"
+            app:popUpToInclusive="true"/>
         <action
             android:id="@+id/toAllHousesFragment"
             app:destination="@id/allHousesFragment" />
@@ -27,7 +29,11 @@
         tools:layout="@layout/all_houses_fragment" >
         <action
             android:id="@+id/toAddEditHouseFragment"
-            app:destination="@id/addEditHouseFragment" />
+            app:destination="@id/addEditHouseFragment"
+            app:enterAnim="@anim/fragment_open_enter"
+            app:exitAnim="@anim/fragment_close_exit"
+            app:popEnterAnim="@anim/fragment_open_enter"
+            app:popExitAnim="@anim/fragment_close_exit" />
     </fragment>
     <fragment
         android:id="@+id/uploadingImagesFragment"
@@ -36,15 +42,12 @@
         tools:layout="@layout/uploading_images_fragment" >
         <action
             android:id="@+id/toAllHousesFragment"
-            app:destination="@id/allHousesFragment"
-            app:popUpTo="@+id/addEditHouseFragment"
-            app:popUpToInclusive="true"
-            />
+            app:destination="@id/allHousesFragment"/>
         <argument
             android:name="houseKey"
             app:argType="string" />
         <argument
             android:name="imagesToUpload"
-            app:argType="android.graphics.Bitmap[]" />
+            app:argType="android.net.Uri[]" />
     </fragment>
 </navigation>

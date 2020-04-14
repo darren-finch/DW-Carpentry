@@ -1,6 +1,9 @@
 package com.all.dwcarpentry.ui.fragments
 
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +15,9 @@ import androidx.navigation.fragment.navArgs
 import com.all.dwcarpentry.MainViewModel
 import com.all.dwcarpentry.R
 import com.all.dwcarpentry.helpers.InjectionUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class UploadingImagesFragment : Fragment()
@@ -20,6 +26,9 @@ class UploadingImagesFragment : Fragment()
     private val viewModel: MainViewModel by viewModels {
         InjectionUtils.provideMainViewModelFactory()
     }
+    private var imagesToUpload = arrayOf<Uri>()
+    private val parentJob = Job()
+    private var isUploadingImages = true
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,24 +37,41 @@ class UploadingImagesFragment : Fragment()
     {
         return inflater.inflate(R.layout.uploading_images_fragment, container, false)
     }
-
     override fun onActivityCreated(savedInstanceState: Bundle?)
     {
         super.onActivityCreated(savedInstanceState)
-        if (args.imagesToUpload.isEmpty())
+        imagesToUpload = args.imagesToUpload
+        if (imagesToUpload.isEmpty() || !isUploadingImages)
         {
             navigateToAllHousesFragment()
             return
         }
-        lifecycleScope.launch{
+        CoroutineScope(Dispatchers.IO + parentJob).launch(){
             uploadHouseImages()
         }
     }
-
+    override fun onResume()
+    {
+        super.onResume()
+        if(!isUploadingImages)
+            navigateToAllHousesFragment()
+    }
     private suspend fun uploadHouseImages()
     {
-        viewModel.uploadHouseImages(args.imagesToUpload.toList(), args.houseKey)
+        isUploadingImages = true
+        val bitmaps = getBitmapsFromUris()
+        viewModel.uploadHouseImages(bitmaps, args.houseKey)
+        isUploadingImages = false
         navigateToAllHousesFragment()
+    }
+    private fun getBitmapsFromUris() : List<Bitmap>
+    {
+        val bitmaps = mutableListOf<Bitmap>()
+        for(uri in imagesToUpload)
+        {
+            bitmaps.add(MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, uri))
+        }
+        return bitmaps
     }
 
     private fun navigateToAllHousesFragment()

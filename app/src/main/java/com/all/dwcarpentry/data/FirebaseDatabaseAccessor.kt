@@ -15,10 +15,22 @@ import java.util.*
 class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReference)
 {
     private val allHousesMutable: MutableLiveData<MutableList<House>> = MutableLiveData()
+//    private val oldestHouseId = ""
     private val curHouse: MutableLiveData<House> = MutableLiveData()
 
     private lateinit var listener: Listener
 
+//    fun requestMoreHouses() : LiveData<MutableList<House>>
+//    {
+//        firebaseDatabaseRef.startAt(oldestHouseId).orderByKey().addValueEventListener(object : ValueEventListener{
+//            override fun onCancelled(p0: DatabaseError) {}
+//            override fun onDataChange(p0: DataSnapshot)
+//            {
+//                return allHousesMutable.postValue(toHouses(p0))
+//            }
+//        })
+//        return allHousesMutable
+//    }
     fun getHouses() : LiveData<MutableList<House>>
     {
         firebaseDatabaseRef.addValueEventListener(object : ValueEventListener

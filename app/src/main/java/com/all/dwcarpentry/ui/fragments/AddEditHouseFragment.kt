@@ -2,6 +2,7 @@ package com.all.dwcarpentry.ui.fragments
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.*
@@ -19,7 +20,6 @@ import com.all.dwcarpentry.helpers.Constants
 import com.all.dwcarpentry.helpers.InjectionUtils
 import com.bumptech.glide.Glide
 import kotlinx.coroutines.*
-import java.util.*
 
 class AddEditHouseFragment : Fragment()
 {
@@ -30,9 +30,8 @@ class AddEditHouseFragment : Fragment()
     }
 
     private lateinit var houseData: House
-    private var houseKey: String = ""
     private var houseImages = mutableListOf<Bitmap>()
-    private var isNewImageList = mutableListOf<Boolean>()
+    private var imagesMetaData = ImagesMetaData()
     private var deletedHouseImageNames = mutableListOf<String>()
     private var insertingHouse = false
 
@@ -62,16 +61,19 @@ class AddEditHouseFragment : Fragment()
         if (requestCode == Constants.CHOOSE_IMAGE_REQUEST && data != null)
         {
             val uri = data.data
-            try
+            if(uri != null)
             {
-                val bm = MediaStore.Images.Media.getBitmap(activity!!.contentResolver, uri)
-                houseImages.add(bm)
-                isNewImageList.add(true)
-                setupCarousel()
-            }
-            catch (e: Exception)
-            {
-                e.printStackTrace()
+                try
+                {
+                    val bm = MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, uri)
+                    houseImages.add(bm)
+                    imagesMetaData.addNewImage(uri)
+                    setupCarousel()
+                }
+                catch (e: Exception)
+                {
+                    e.printStackTrace()
+                }
             }
         }
     }
@@ -123,7 +125,7 @@ class AddEditHouseFragment : Fragment()
         houseData.homeImagesNames = mutableListOf()
 
         houseImages.clear()
-        isNewImageList.clear()
+        imagesMetaData.clearMetaData()
 
         binding.homeImageCarousel.pageCount = 0
 
@@ -135,9 +137,9 @@ class AddEditHouseFragment : Fragment()
     }
     private fun removeHouseImage(i: Int)
     {
-        val isNewImage = isNewImageList[i]
+        val isNewImage = imagesMetaData.isNewImage(i)
+        imagesMetaData.removeImage(i, houseImages.size)
         houseImages.removeAt(i)
-        isNewImageList.removeAt(i)
         if (!isNewImage)
         {
             val imageUrl = houseData.homeImagesUrls[i]
@@ -150,13 +152,12 @@ class AddEditHouseFragment : Fragment()
     }
     private fun loadImages()
     {
+        //TODO: If we ever create a refresh button, when loading images, clearing the entire house image list will erase all newly added images that haven't been uploaded yet. Change this.
+        houseImages.clear()
+        setupCarousel()
+
         lifecycleScope.launch{
-            //TODO: If we ever create a refresh button, when loading images, clearing the entire house image list will erase all newly added images that haven't been uploaded yet. Change this.
-            houseImages.clear()
-            isNewImageList.clear()
-
             downloadImages()
-
             withContext(Dispatchers.Main)
             {
                 setupCarousel()
@@ -181,7 +182,7 @@ class AddEditHouseFragment : Fragment()
             e.printStackTrace()
         }
         for(i in houseImages.indices)
-            isNewImageList.add(false)
+            imagesMetaData.addOldImage()
     }
     private fun initUI()
     {
@@ -208,7 +209,7 @@ class AddEditHouseFragment : Fragment()
     {
         lifecycleScope.launch {
             saveHouse()
-            val newHouseImages = getNewHouseImages()
+            val newHouseImages = imagesMetaData.getNewHouseImages()
             val newHouseKey = viewModel.insertHouse(houseData)
             withContext(Dispatchers.Main)
             {
@@ -219,7 +220,7 @@ class AddEditHouseFragment : Fragment()
     private fun updateHouse()
     {
         saveHouse()
-        val newHouseImages = getNewHouseImages()
+        val newHouseImages = imagesMetaData.getNewHouseImages()
         viewModel.updateHouse(houseData, deletedHouseImageNames)
         navigateToUploadingImagesFragment(args.houseKey, newHouseImages)
     }
@@ -235,18 +236,7 @@ class AddEditHouseFragment : Fragment()
         houseData.materialsUsed = binding.materialsUsedEditText.text.toString()
     }
     //Returns only the images from the carousel that the user added. Not the ones that were downloaded.
-    private fun getNewHouseImages() : Array<Bitmap>
-    {
-        val newHouseImages = mutableListOf<Bitmap>()
-        for(i in houseImages.indices)
-        {
-            if(isNewImageList[i])
-                newHouseImages.add(houseImages[i])
-        }
-        return newHouseImages.toTypedArray()
-    }
-
-    private fun navigateToUploadingImagesFragment(houseKey: String, newHouseImages: Array<Bitmap>)
+    private fun navigateToUploadingImagesFragment(houseKey: String, newHouseImages: Array<Uri>)
     {
         if(view != null)
         {
@@ -260,6 +250,53 @@ class AddEditHouseFragment : Fragment()
         {
             val directions = AddEditHouseFragmentDirections.toAllHousesFragment()
             view!!.findNavController().navigate(directions)
+        }
+    }
+
+    private class ImagesMetaData
+    {
+        private var houseImageUris = mutableListOf<Uri>()
+        private var isNewImageList = mutableListOf<Boolean>()
+
+        fun addOldImage()
+        {
+            isNewImageList.add(false)
+        }
+        fun addNewImage(uri: Uri)
+        {
+            houseImageUris.add(uri)
+            isNewImageList.add(true)
+        }
+        fun removeImage(i: Int, imageArraySize: Int)
+        {
+            if(isNewImage(i))
+            {
+                val homeImageUrisIndex = i - (imageArraySize - houseImageUris.size)
+                if (homeImageUrisIndex < houseImageUris.size && homeImageUrisIndex >= 0)
+                {
+                    houseImageUris.removeAt(i)
+                }
+            }
+            isNewImageList.removeAt(i)
+        }
+        fun clearMetaData()
+        {
+            houseImageUris.clear()
+            isNewImageList.clear()
+        }
+        fun isNewImage(i: Int) : Boolean
+        {
+            return i < isNewImageList.size && isNewImageList[i]
+        }
+        fun getNewHouseImages() : Array<Uri>
+        {
+            val newHouseImages = mutableListOf<Uri>()
+            for(i in houseImageUris.indices)
+            {
+                if(isNewImageList[i])
+                    newHouseImages.add(houseImageUris[i])
+            }
+            return newHouseImages.toTypedArray()
         }
     }
 }
