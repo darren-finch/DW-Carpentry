@@ -18,11 +18,6 @@ class MainActivity : AppCompatActivity()
         auth = FirebaseAuth.getInstance()
         signInAnonymously()
     }
-    override fun onDestroy()
-    {
-        auth.signOut()
-        super.onDestroy()
-    }
     private fun signInAnonymously()
     {
         //Blatant copy of Google's method, but it should get the job done.
