@@ -22,13 +22,20 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
 
 //    fun requestMoreHouses() : LiveData<MutableList<House>>
 //    {
-//        firebaseDatabaseRef.startAt(oldestHouseId).orderByKey().addValueEventListener(object : ValueEventListener{
-//            override fun onCancelled(p0: DatabaseError) {}
-//            override fun onDataChange(p0: DataSnapshot)
-//            {
-//                return allHousesMutable.postValue(toHouses(p0))
-//            }
-//        })
+//        if(oldestHouseId.isNotEmpty())
+//        {
+//            firebaseDatabaseRef.startAt(oldestHouseId).orderByKey().addValueEventListener(object : ValueEventListener{
+//                override fun onCancelled(p0: DatabaseError) {}
+//                override fun onDataChange(p0: DataSnapshot)
+//                {
+//                    return allHousesMutable.postValue(toHouses(p0))
+//                }
+//            })
+//        }
+//        else
+//        {
+//
+//        }
 //        return allHousesMutable
 //    }
     fun getHouses() : LiveData<MutableList<House>>
@@ -70,7 +77,7 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
         }
         return houses
     }
-    fun insertHouseImagesIntoDB(houseKey: String, imageUrls: List<String>, imageNames: List<String>)
+    fun insertHouseImageIntoDB(houseKey: String, imageUrl: String, imageName: String)
     {
         if(houseKey.isEmpty())
             return
@@ -85,13 +92,12 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
                 if(updated)
                     return
                 val house = p0.getValue(House::class.java) ?: return
-                house.homeImagesUrls.addAll(imageUrls)
-                house.homeImagesNames.addAll(imageNames)
+                house.homeImagesUrls.add(imageUrl)
+                house.homeImagesNames.add(imageName)
                 houseRef.setValue(house)
                 updated = true
             }
         })
-        firebaseDatabaseRef.child(houseKey).child(Constants.homeImagesNames).setValue(imageNames)
     }
 
     fun insertHouse(house: House) : String

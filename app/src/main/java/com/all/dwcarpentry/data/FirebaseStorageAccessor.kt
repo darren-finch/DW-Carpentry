@@ -2,7 +2,6 @@ package com.all.dwcarpentry.data
 
 import android.graphics.Bitmap
 import android.util.Log
-import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
@@ -17,9 +16,6 @@ class FirebaseStorageAccessor(private val firebaseStorageRef: StorageReference)
     {
         if(listener != null)
         {
-            val imageUrls = mutableListOf<String>()
-            val imageNames = mutableListOf<String>()
-
             for(bm in images)
             {
                 val baos = ByteArrayOutputStream()
@@ -31,12 +27,9 @@ class FirebaseStorageAccessor(private val firebaseStorageRef: StorageReference)
                 if(taskSnapshot != null)
                 {
                     val url = ref.downloadUrl.await().toString()
-                    imageUrls.add(url)
-                    imageNames.add(uuid)
+                    listener!!.onUploadedHouseImage(url, uuid)
                 }
             }
-
-            listener!!.onUploadedHouseImages(imageUrls, imageNames)
         }
         else
             Log.e("FirebaseStorageAccessor", "No listener was given to the FirebaseStorageClass, so it cannot upload images.")
@@ -62,6 +55,6 @@ class FirebaseStorageAccessor(private val firebaseStorageRef: StorageReference)
     }
     interface Listener
     {
-        fun onUploadedHouseImages(imageUrls: List<String>, imagesNames: List<String>)
+        fun onUploadedHouseImage(imageUrl: String, imageName: String)
     }
 }

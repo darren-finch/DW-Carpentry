@@ -1,8 +1,8 @@
 package com.all.dwcarpentry.data
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.LiveData
-import com.google.firebase.database.*
 
 /*
 * THE FOLLOWING OPERATIONS MUST BE PRESENT IN THE REPO
@@ -19,9 +19,10 @@ class HouseRepository(private val firebaseDatabaseAccessor: FirebaseDatabaseAcce
     suspend fun uploadHouseImages(images: List<Bitmap>, houseKey: String)
     {
         firebaseStorageAccessor.setListener(object : FirebaseStorageAccessor.Listener{
-            override fun onUploadedHouseImages(imageUrls: List<String>, imagesNames: List<String>)
+            override fun onUploadedHouseImage(imageUrl: String, imageName: String)
             {
-                firebaseDatabaseAccessor.insertHouseImagesIntoDB(houseKey, imageUrls, imagesNames)
+                Log.i("HouseRepository", "Inserting uploaded image into $houseKey")
+                firebaseDatabaseAccessor.insertHouseImageIntoDB(houseKey, imageUrl, imageName)
             }
         })
         firebaseStorageAccessor.uploadHouseImages(images)
@@ -57,11 +58,4 @@ class HouseRepository(private val firebaseDatabaseAccessor: FirebaseDatabaseAcce
         firebaseDatabaseAccessor.deleteHouse(houseKey)
     }
     //endregion
-    abstract class OnChildAddedListener : ChildEventListener
-    {
-        override fun onCancelled(p0: DatabaseError) {}
-        final override fun onChildMoved(p0: DataSnapshot, p1: String?) {}
-        final override fun onChildChanged(p0: DataSnapshot, p1: String?) {}
-        final override fun onChildRemoved(p0: DataSnapshot) {}
-    }
 }
