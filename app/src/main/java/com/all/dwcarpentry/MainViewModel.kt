@@ -12,6 +12,10 @@ class MainViewModel(private val repo: HouseRepository) : ViewModel()
     {
         repo.uploadHouseImages(images, houseKey)
     }
+    fun loadMoreHouses()
+    {
+        repo.loadMoreHouses()
+    }
     fun getHouses() : LiveData<MutableList<House>>
     {
         return repo.getHouses()

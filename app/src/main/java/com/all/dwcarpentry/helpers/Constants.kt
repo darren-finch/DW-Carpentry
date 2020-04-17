@@ -1,16 +1,22 @@
 package com.all.dwcarpentry.helpers
 
-object Constants {
-    //region Log tags
-    const val DEF_LOG_TAG = "Log"
-    //endregion
+import com.all.dwcarpentry.data.FirebaseDatabaseAccessor
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.FirebaseStorage
+
+object Constants
+{
+//region Log tags
+    const val TAG = "Log"
+//endregion
 //region Request codes
     const val CHOOSE_IMAGE_REQUEST = 1
-    //endregion
+//endregion
 //region Field names
-    const val homeImagesUrls = "homeImagesUrls"
-    const val homeImagesNames = "homeImagesNames"
-    //endregion
+    const val FIREBASE_DATABASE_HOUSES_REF = "houses"
+    const val FIREBASE_STORAGE_ALL_IMAGES_REF = "images/all"
+//endregion
 //region Misc
-    const val JPEG_COMPRESSION_PERCENTAGE = 50 //endregion
+    const val PAGE_SIZE = 5
+//endregion
 }

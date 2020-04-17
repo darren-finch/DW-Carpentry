@@ -1,11 +1,9 @@
 package com.all.dwcarpentry.data
 
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.all.dwcarpentry.helpers.Constants
 import com.google.firebase.database.*
-import com.google.firebase.storage.FirebaseStorage
 import java.util.*
 
 /*
@@ -15,39 +13,42 @@ import java.util.*
 class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReference)
 {
     private val allHousesMutable: MutableLiveData<MutableList<House>> = MutableLiveData()
-//    private val oldestHouseId = ""
     private val curHouse: MutableLiveData<House> = MutableLiveData()
-
+    private var oldestHouseKey = ""
     private lateinit var listener: Listener
 
-//    fun requestMoreHouses() : LiveData<MutableList<House>>
-//    {
-//        if(oldestHouseId.isNotEmpty())
-//        {
-//            firebaseDatabaseRef.startAt(oldestHouseId).orderByKey().addValueEventListener(object : ValueEventListener{
-//                override fun onCancelled(p0: DatabaseError) {}
-//                override fun onDataChange(p0: DataSnapshot)
-//                {
-//                    return allHousesMutable.postValue(toHouses(p0))
-//                }
-//            })
-//        }
-//        else
-//        {
-//
-//        }
-//        return allHousesMutable
-//    }
+    fun loadMoreHouses()
+    {
+        if(oldestHouseKey.isEmpty())
+        {
+            firebaseDatabaseRef
+                .orderByKey()
+                .limitToLast(Constants.PAGE_SIZE)
+                .addValueEventListener(object : ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {}
+                override fun onDataChange(p0: DataSnapshot)
+                {
+                    allHousesMutable.postValue(toHouses(p0))
+                }
+            })
+        }
+        else
+        {
+            firebaseDatabaseRef
+                .orderByKey()
+                .limitToLast(Constants.PAGE_SIZE)
+                .endAt(oldestHouseKey)
+                .addValueEventListener(object : ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {}
+                override fun onDataChange(p0: DataSnapshot)
+                {
+                    allHousesMutable.postValue(toHouses(p0))
+                }
+            })
+        }
+    }
     fun getHouses() : LiveData<MutableList<House>>
     {
-        firebaseDatabaseRef.addValueEventListener(object : ValueEventListener
-        {
-            override fun onCancelled(p0: DatabaseError) {}
-            override fun onDataChange(p0: DataSnapshot)
-            {
-                return allHousesMutable.postValue(toHouses(p0))
-            }
-        })
         return allHousesMutable
     }
     fun getHouse(houseKey: String) : LiveData<House>
@@ -65,17 +66,26 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
     }
     private fun toHouses(snapshot: DataSnapshot): MutableList<House>
     {
-        val houses = mutableListOf<House>()
+        val newHouses = mutableListOf<House>()
+        var currentHouses = mutableListOf<House>()
+        if(allHousesMutable.value != null)
+            currentHouses = allHousesMutable.value!!
+
         for (houseSnapshot in snapshot.children)
         {
             val house = houseSnapshot.getValue(House::class.java)
             if (house != null)
             {
                 house.key = houseSnapshot.key.toString()
-                houses.add(house)
+                newHouses.add(house)
             }
         }
-        return houses
+        if(newHouses.size > 0)
+            oldestHouseKey = newHouses[0].key
+        newHouses.reverse()
+
+        currentHouses.addAll(newHouses)
+        return currentHouses
     }
     fun insertHouseImageIntoDB(houseKey: String, imageUrl: String, imageName: String)
     {

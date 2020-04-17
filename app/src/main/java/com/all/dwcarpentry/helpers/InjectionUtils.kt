@@ -9,12 +9,11 @@ import com.google.firebase.storage.FirebaseStorage
 
 object InjectionUtils
 {
-    private val repository: HouseRepository = HouseRepository(FirebaseDatabaseAccessor(FirebaseDatabase.getInstance().reference.child("houses")),
-        FirebaseStorageAccessor(FirebaseStorage.getInstance().reference.child("images/all")))
+    private val repository: HouseRepository = HouseRepository(FirebaseDatabaseAccessor(FirebaseDatabase.getInstance().reference.child(Constants.FIREBASE_DATABASE_HOUSES_REF)),
+        FirebaseStorageAccessor(FirebaseStorage.getInstance().reference.child(Constants.FIREBASE_STORAGE_ALL_IMAGES_REF)))
 
     fun provideMainViewModelFactory() : MainViewModelFactory
     {
-        println("debug: Repository = $repository")
         return MainViewModelFactory(repository)
     }
 }

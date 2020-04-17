@@ -29,6 +29,10 @@ class HouseRepository(private val firebaseDatabaseAccessor: FirebaseDatabaseAcce
     }
     //endregion
     //region Firebase Database Operations
+    fun loadMoreHouses()
+    {
+        firebaseDatabaseAccessor.loadMoreHouses()
+    }
     fun getHouses() : LiveData<MutableList<House>>
     {
         return firebaseDatabaseAccessor.getHouses()

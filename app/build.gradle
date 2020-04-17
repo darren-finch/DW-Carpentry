@@ -55,7 +55,9 @@ dependencies {
     implementation 'com.synnapps:carouselview:0.1.5'
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    implementation 'android.arch.paging:runtime:1.0.1'
     implementation 'com.google.firebase:firebase-database:19.2.1'
+    implementation 'com.firebaseui:firebase-ui-database:6.2.1'
     implementation "com.google.firebase:firebase-core:17.3.0"
     implementation 'com.google.firebase:firebase-storage-ktx:19.1.1'
     implementation 'com.google.firebase:firebase-auth:19.3.0'
