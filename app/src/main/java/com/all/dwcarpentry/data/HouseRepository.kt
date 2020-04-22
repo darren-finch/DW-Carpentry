@@ -29,6 +29,10 @@ class HouseRepository(private val firebaseDatabaseAccessor: FirebaseDatabaseAcce
     }
     //endregion
     //region Firebase Database Operations
+    fun resetPagination()
+    {
+        firebaseDatabaseAccessor.resetPagination()
+    }
     fun loadMoreHouses()
     {
         firebaseDatabaseAccessor.loadMoreHouses()
@@ -40,6 +44,10 @@ class HouseRepository(private val firebaseDatabaseAccessor: FirebaseDatabaseAcce
     fun getHouse(houseKey: String) : LiveData<House>
     {
         return firebaseDatabaseAccessor.getHouse(houseKey)
+    }
+    fun generateHouses()
+    {
+        firebaseDatabaseAccessor.generateHouses()
     }
     fun insertHouse(house: House) : String
     {

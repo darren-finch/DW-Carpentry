@@ -29,11 +29,12 @@ class AllHousesFragment : Fragment()
     private lateinit var housesRecyclerViewAdapter: HousesRecyclerViewAdapter
 
     private lateinit var layoutManager: LinearLayoutManager
-    private var firstLoad = true
-    private var loading = true
+    private var loading = false
     private var pastVisibleItems = 0
     private var visibleItemCount = 0
     private var totalItemCount = 0
+
+//    private val generateHouses = false
 
     //region Listeners
     private val onRecyclerViewScroll = object : RecyclerView.OnScrollListener()
@@ -46,11 +47,11 @@ class AllHousesFragment : Fragment()
                 totalItemCount = layoutManager.itemCount
                 pastVisibleItems = layoutManager.findFirstVisibleItemPosition()
 
-                if(loading)
+                if(!loading)
                 {
                     if ((visibleItemCount + pastVisibleItems) >= totalItemCount)
                     {
-                        loading = false;
+                        loading = true;
                         Log.v("...", "Last Item Wow !");
                         viewModel.loadMoreHouses()
                     }
@@ -86,6 +87,15 @@ class AllHousesFragment : Fragment()
     override fun onActivityCreated(savedInstanceState: Bundle?)
     {
         super.onActivityCreated(savedInstanceState)
+        viewModel = ViewModelProviders.of(requireActivity(), InjectionUtils.provideMainViewModelFactory()).get(MainViewModel::class.java)
+
+//        if(generateHouses)
+//        {
+//            viewModel.generateHouses()
+//            return
+//        }
+
+        viewModel.resetPagination()
         observeHouses()
         viewModel.loadMoreHouses()
         initUI()
@@ -111,13 +121,10 @@ class AllHousesFragment : Fragment()
 
     private fun observeHouses()
     {
-        viewModel = ViewModelProviders.of(requireActivity(), InjectionUtils.provideMainViewModelFactory()).get(MainViewModel::class.java)
         viewModel.getHouses().observe(viewLifecycleOwner, androidx.lifecycle.Observer { houses ->
             housesRecyclerViewAdapter.updateHouses(houses)
             postUpdateHouses(houses.size < 1)
-            if(!firstLoad)
-                loading = false
-            firstLoad = false
+            loading = false
         })
     }
 

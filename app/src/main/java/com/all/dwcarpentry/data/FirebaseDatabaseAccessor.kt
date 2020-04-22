@@ -17,6 +17,11 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
     private var oldestHouseKey = ""
     private lateinit var listener: Listener
 
+    fun resetPagination()
+    {
+        allHousesMutable.postValue(mutableListOf())
+        oldestHouseKey = ""
+    }
     fun loadMoreHouses()
     {
         if(oldestHouseKey.isEmpty())
@@ -66,11 +71,24 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
     }
     private fun toHouses(snapshot: DataSnapshot): MutableList<House>
     {
-        val newHouses = mutableListOf<House>()
+        val newHouses = snapshotToHouses(snapshot)
         var currentHouses = mutableListOf<House>()
         if(allHousesMutable.value != null)
             currentHouses = allHousesMutable.value!!
 
+        if(oldestHouseKey.isNotEmpty())
+            newHouses.removeAt(newHouses.lastIndex)
+
+        if(newHouses.size > 0)
+            oldestHouseKey = newHouses[0].key
+        newHouses.reverse()
+
+        currentHouses.addAll(newHouses)
+        return currentHouses
+    }
+    private fun snapshotToHouses(snapshot: DataSnapshot): MutableList<House>
+    {
+        val newHouses = mutableListOf<House>()
         for (houseSnapshot in snapshot.children)
         {
             val house = houseSnapshot.getValue(House::class.java)
@@ -80,12 +98,7 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
                 newHouses.add(house)
             }
         }
-        if(newHouses.size > 0)
-            oldestHouseKey = newHouses[0].key
-        newHouses.reverse()
-
-        currentHouses.addAll(newHouses)
-        return currentHouses
+        return newHouses;
     }
     fun insertHouseImageIntoDB(houseKey: String, imageUrl: String, imageName: String)
     {
@@ -117,6 +130,45 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
         house.key = keyString
         ref.setValue(house)
         return keyString
+    }
+
+    fun generateHouses()
+    {
+        val houses = mutableListOf<House>()
+        val homeImageUrls = mutableListOf<String>()
+        homeImageUrls.add("https://firebasestorage.googleapis.com/v0/b/dc-carpentry-b7864.appspot.com/o/images%2Fdefault%2Fhouse.jpg?alt=media&token=8ee790fe-06de-4561-905f-7f15b23e74b5")
+        homeImageUrls.add("https://firebasestorage.googleapis.com/v0/b/dc-carpentry-b7864.appspot.com/o/images%2Fdefault%2Fhouse2.jpg?alt=media&token=c9c226f1-8bfd-4d9d-9453-0633f16b861a")
+        homeImageUrls.add("https://firebasestorage.googleapis.com/v0/b/dc-carpentry-b7864.appspot.com/o/images%2Fdefault%2Fhouse3.jpg?alt=media&token=8afbc4a4-d023-4291-8edb-78dce22772a9")
+        val homeImageNames = mutableListOf<String>()
+        homeImageNames.add("house")
+        homeImageNames.add("house1")
+        homeImageNames.add("house2")
+
+        for (i in 1..500)
+            houses.add(House("", "Homeowner $i", "Address $i", "", homeImageUrls, homeImageNames))
+
+        firebaseDatabaseRef.setValue(houses).addOnSuccessListener {
+            firebaseDatabaseRef.addValueEventListener(object : ValueEventListener {
+                var changed = false
+                override fun onCancelled(p0: DatabaseError) {}
+                override fun onDataChange(p0: DataSnapshot)
+                {
+                    if(p0.exists() && !changed)
+                    {
+                        for(snapshot in p0.children)
+                        {
+                            val house = snapshot.getValue(House::class.java)
+                            if(house != null)
+                            {
+                                house.key = snapshot.key.toString()
+                                snapshot.ref.setValue(house)
+                            }
+                        }
+                        changed = true
+                    }
+                }
+            })
+        }
     }
 
     fun updateHouse(house: House)

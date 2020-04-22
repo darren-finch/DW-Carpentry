@@ -12,6 +12,10 @@ class MainViewModel(private val repo: HouseRepository) : ViewModel()
     {
         repo.uploadHouseImages(images, houseKey)
     }
+    fun resetPagination()
+    {
+        repo.resetPagination()
+    }
     fun loadMoreHouses()
     {
         repo.loadMoreHouses()
@@ -23,6 +27,10 @@ class MainViewModel(private val repo: HouseRepository) : ViewModel()
     fun getHouse(houseKey: String) : LiveData<House>
     {
         return repo.getHouse(houseKey)
+    }
+    fun generateHouses()
+    {
+        repo.generateHouses()
     }
     fun insertHouse(newHouse: House) : String
     {

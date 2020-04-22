@@ -6,17 +6,17 @@ import com.google.firebase.storage.FirebaseStorage
 
 object Constants
 {
-//region Log tags
+    //region Log tags
     const val TAG = "Log"
-//endregion
+    //endregion
 //region Request codes
     const val CHOOSE_IMAGE_REQUEST = 1
-//endregion
+    //endregion
 //region Field names
     const val FIREBASE_DATABASE_HOUSES_REF = "houses"
     const val FIREBASE_STORAGE_ALL_IMAGES_REF = "images/all"
-//endregion
+    //endregion
 //region Misc
-    const val PAGE_SIZE = 5
+    const val PAGE_SIZE = 15
 //endregion
 }
