@@ -19,7 +19,7 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
 
     fun resetPagination()
     {
-        allHousesMutable.postValue(mutableListOf())
+        allHousesMutable.value = mutableListOf()
         oldestHouseKey = ""
     }
     fun loadMoreHouses()
@@ -29,7 +29,7 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
             firebaseDatabaseRef
                 .orderByKey()
                 .limitToLast(Constants.PAGE_SIZE)
-                .addValueEventListener(object : ValueEventListener{
+                .addListenerForSingleValueEvent(object : ValueEventListener{
                 override fun onCancelled(p0: DatabaseError) {}
                 override fun onDataChange(p0: DataSnapshot)
                 {
@@ -43,7 +43,7 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
                 .orderByKey()
                 .limitToLast(Constants.PAGE_SIZE)
                 .endAt(oldestHouseKey)
-                .addValueEventListener(object : ValueEventListener{
+                .addListenerForSingleValueEvent(object : ValueEventListener{
                 override fun onCancelled(p0: DatabaseError) {}
                 override fun onDataChange(p0: DataSnapshot)
                 {
@@ -71,22 +71,23 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
     }
     private fun toHouses(snapshot: DataSnapshot): MutableList<House>
     {
-        val newHouses = snapshotToHouses(snapshot)
+        val newHouses = snapshotToNewHouses(snapshot)
         var currentHouses = mutableListOf<House>()
-        if(allHousesMutable.value != null)
-            currentHouses = allHousesMutable.value!!
-
         if(oldestHouseKey.isNotEmpty())
+        {
             newHouses.removeAt(newHouses.lastIndex)
+            currentHouses = allHousesMutable.value!!
+        }
 
-        if(newHouses.size > 0)
-            oldestHouseKey = newHouses[0].key
         newHouses.reverse()
 
         currentHouses.addAll(newHouses)
+        if(currentHouses.lastIndex > -1)
+            oldestHouseKey = currentHouses[currentHouses.lastIndex].key
+
         return currentHouses
     }
-    private fun snapshotToHouses(snapshot: DataSnapshot): MutableList<House>
+    private fun snapshotToNewHouses(snapshot: DataSnapshot): MutableList<House>
     {
         val newHouses = mutableListOf<House>()
         for (houseSnapshot in snapshot.children)
@@ -98,7 +99,7 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
                 newHouses.add(house)
             }
         }
-        return newHouses;
+        return newHouses
     }
     fun insertHouseImageIntoDB(houseKey: String, imageUrl: String, imageName: String)
     {
@@ -121,15 +122,6 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
                 updated = true
             }
         })
-    }
-
-    fun insertHouse(house: House) : String
-    {
-        val ref = firebaseDatabaseRef.push()
-        val keyString = ref.key.toString()
-        house.key = keyString
-        ref.setValue(house)
-        return keyString
     }
 
     fun generateHouses()
@@ -169,6 +161,15 @@ class FirebaseDatabaseAccessor(private val firebaseDatabaseRef: DatabaseReferenc
                 }
             })
         }
+    }
+
+    fun insertHouse(house: House) : String
+    {
+        val ref = firebaseDatabaseRef.push()
+        val keyString = ref.key.toString()
+        house.key = keyString
+        ref.setValue(house)
+        return keyString
     }
 
     fun updateHouse(house: House)

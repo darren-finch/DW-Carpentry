@@ -94,7 +94,6 @@ class AllHousesFragment : Fragment()
 //            viewModel.generateHouses()
 //            return
 //        }
-
         viewModel.resetPagination()
         observeHouses()
         viewModel.loadMoreHouses()

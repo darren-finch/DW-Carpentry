@@ -34,6 +34,11 @@ class HousesRecyclerViewAdapter(private val housesData: MutableList<House>, priv
         notifyDataSetChanged()
 //        notifyItemRangeInserted(allHouses.size, newHouses.size)
     }
+
+    fun clearData()
+    {
+        housesData.clear()
+    }
 }
 
 interface OnHouseCardClickedListener
