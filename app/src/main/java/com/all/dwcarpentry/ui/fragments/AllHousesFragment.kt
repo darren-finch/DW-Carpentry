@@ -3,14 +3,12 @@ package com.all.dwcarpentry.ui.fragments
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.all.dwcarpentry.MainViewModel
-import com.all.dwcarpentry.R
 import com.all.dwcarpentry.databinding.AllHousesFragmentBinding
 import com.all.dwcarpentry.helpers.InjectionUtils
 import com.all.dwcarpentry.ui.recyclerviews.HousesRecyclerViewAdapter
@@ -79,37 +77,15 @@ class AllHousesFragment : Fragment()
         _binding = AllHousesFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
-    override fun onCreate(savedInstanceState: Bundle?)
-    {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
     override fun onActivityCreated(savedInstanceState: Bundle?)
     {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(requireActivity(), InjectionUtils.provideMainViewModelFactory()).get(MainViewModel::class.java)
 
-//        if(generateHouses)
-//        {
-//            viewModel.generateHouses()
-//            return
-//        }
         viewModel.resetPagination()
         observeHouses()
         viewModel.loadMoreHouses()
         initUI()
-    }
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.search_menu, menu)
-        val searchView = menu.findItem(R.id.searchButton).actionView as SearchView
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean { return false }
-            override fun onQueryTextChange(newText: String): Boolean {
-//                housesRecyclerViewAdapter.filter.filter(newText)
-                return true
-            }
-        })
     }
     override fun onDestroyView()
     {
