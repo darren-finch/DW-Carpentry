@@ -11,13 +11,8 @@
         android:label="add_edit_house_fragment"
         tools:layout="@layout/add_edit_house_fragment" >
         <argument
-            android:name="houseKey"
-            app:argType="string" />
-        <action
-            android:id="@+id/toUploadingImagesFragment"
-            app:destination="@id/uploadingImagesFragment"
-            app:popUpTo="@id/nav_main"
-            app:popUpToInclusive="true"/>
+            android:name="houseId"
+            app:argType="integer" />
         <action
             android:id="@+id/toAllHousesFragment"
             app:destination="@id/allHousesFragment" />
@@ -34,20 +29,5 @@
             app:exitAnim="@anim/fragment_close_exit"
             app:popEnterAnim="@anim/fragment_open_enter"
             app:popExitAnim="@anim/fragment_close_exit" />
-    </fragment>
-    <fragment
-        android:id="@+id/uploadingImagesFragment"
-        android:name="com.all.dwcarpentry.ui.fragments.UploadingImagesFragment"
-        android:label="uploading_images_fragment"
-        tools:layout="@layout/uploading_images_fragment" >
-        <action
-            android:id="@+id/toAllHousesFragment"
-            app:destination="@id/allHousesFragment"/>
-        <argument
-            android:name="houseKey"
-            app:argType="string" />
-        <argument
-            android:name="imagesToUpload"
-            app:argType="android.net.Uri[]" />
     </fragment>
 </navigation>

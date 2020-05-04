@@ -7,43 +7,37 @@ import android.net.Uri
  */
 class ImageUriTracker
 {
-    private var newImageUris = mutableListOf<Uri>()
+    private var imageUris = mutableListOf<Uri>()
     private var totalImageListSize = 0
 
     fun setTotalImageListSize(totalImageListSize: Int)
     {
         this.totalImageListSize = totalImageListSize
     }
-    fun addNewImageUri(uri: Uri)
+    fun addImageUri(uri: Uri)
     {
-        newImageUris.add(uri)
+        imageUris.add(uri)
     }
     fun removeImageUri(i: Int)
     {
         val properIndex = transformIndex(i)
-        if(properIndex < newImageUris.size && properIndex >= 0)
-            newImageUris.removeAt(properIndex)
+        if(properIndex < imageUris.size && properIndex >= 0)
+            imageUris.removeAt(properIndex)
     }
     fun clear()
     {
-        newImageUris.clear()
+        imageUris.clear()
     }
     fun isNewImageUri(i: Int) : Boolean
     {
-        return newImageUris.size > transformIndex(i)
+        return imageUris.size > transformIndex(i)
     }
-    fun getNewHouseImages() : Array<Uri>
+    fun getImageUriStrings() : List<String>
     {
-        val newHouseImages = mutableListOf<Uri>()
-        for(i in newImageUris.indices)
-        {
-            if(isNewImageUri(i))
-                newHouseImages.add(newImageUris[i])
-        }
-        return newHouseImages.toTypedArray()
+        return imageUris.map { uri -> uri.toString() }
     }
     private fun transformIndex(i: Int) : Int
     {
-        return i - (totalImageListSize - newImageUris.size)
+        return i - (totalImageListSize - imageUris.size)
     }
 }

@@ -8,7 +8,7 @@
 //import androidx.fragment.app.Fragment;
 //
 //import com.all.dwcarpentry.R;
-//import com.all.dwcarpentry.data.House;
+//import com.all.dwcarpentry.data.room.House;
 //import com.firebase.ui.database.paging.DatabasePagingOptions;
 //import com.firebase.ui.database.paging.FirebaseRecyclerPagingAdapter;
 //import com.firebase.ui.database.paging.LoadingState;

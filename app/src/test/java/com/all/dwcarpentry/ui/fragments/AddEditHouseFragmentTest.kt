@@ -1,9 +1,5 @@
 package com.all.dwcarpentry.ui.fragments
 
-import com.all.dwcarpentry.data.House
-import org.junit.Assert.*
-import org.junit.Test
-
 class AddEditHouseFragmentTest
 {
 //    @Test

@@ -1,36 +1,37 @@
 package com.all.dwcarpentry
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import com.all.dwcarpentry.ui.fragments.AllHousesFragment
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.auth.FirebaseAuth
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.all.dwcarpentry.helpers.Constants
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity()
 {
-    private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-        auth = FirebaseAuth.getInstance()
-        signInAnonymously()
+
+        if(ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, arrayOf("READ_EXTERNAL_STORAGE"), Constants.READ_EXTERNAL_STORAGE_REQUEST)
+        }
     }
-    private fun signInAnonymously()
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray)
     {
-        //Blatant copy of Google's method, but it should get the job done.
-        auth.signInAnonymously()
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful)
-                    Log.d("MainActivity", "signInAnonymously:success")
-                else
-                {
-                    Log.w("MainActivity", "signInAnonymously:failure", task.exception)
-                    Toast.makeText(baseContext, "Authentication failed.",
-                        Toast.LENGTH_SHORT).show()
-                }
+        if(requestCode == Constants.READ_EXTERNAL_STORAGE_REQUEST)
+        {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(applicationContext, "Granted the permission to read external storage.", Toast.LENGTH_SHORT).show()
             }
+        }
     }
 }

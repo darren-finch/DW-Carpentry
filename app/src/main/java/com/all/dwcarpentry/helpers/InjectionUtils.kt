@@ -1,19 +1,21 @@
 package com.all.dwcarpentry.helpers
 
-import com.all.dwcarpentry.MainViewModelFactory
-import com.all.dwcarpentry.data.FirebaseDatabaseAccessor
-import com.all.dwcarpentry.data.FirebaseStorageAccessor
+import android.app.Application
+import android.content.Context
+import com.all.dwcarpentry.viewmodels.MainViewModelFactory
 import com.all.dwcarpentry.data.HouseRepository
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.storage.FirebaseStorage
+import com.all.dwcarpentry.data.IRepository
+import com.all.dwcarpentry.data.room.HouseDatabase
 
 object InjectionUtils
 {
-    private val repository: HouseRepository = HouseRepository(FirebaseDatabaseAccessor(FirebaseDatabase.getInstance().reference.child(Constants.FIREBASE_DATABASE_HOUSES_REF)),
-        FirebaseStorageAccessor(FirebaseStorage.getInstance().reference.child(Constants.FIREBASE_STORAGE_ALL_IMAGES_REF)))
+    private var repository: IRepository? = null
 
-    fun provideMainViewModelFactory() : MainViewModelFactory
+    fun provideMainViewModelFactory(application: Application, context: Context) : MainViewModelFactory
     {
-        return MainViewModelFactory(repository)
+        if(repository == null)
+            repository = HouseRepository(HouseDatabase.getInstance(context).houseDao())
+
+        return MainViewModelFactory(application, repository!!)
     }
 }

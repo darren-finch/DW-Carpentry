@@ -1,25 +1,25 @@
 package com.all.dwcarpentry.ui.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.all.dwcarpentry.MainViewModel
+import com.all.dwcarpentry.viewmodels.MainViewModel
 import com.all.dwcarpentry.databinding.AllHousesFragmentBinding
 import com.all.dwcarpentry.helpers.InjectionUtils
 import com.all.dwcarpentry.ui.recyclerviews.HousesRecyclerViewAdapter
 import com.all.dwcarpentry.ui.recyclerviews.MarginItemDecoration
 import com.all.dwcarpentry.ui.recyclerviews.OnHouseCardClickedListener
+import com.all.dwcarpentry.viewmodels.IMainViewModel
+import java.lang.Exception
 
 
 class AllHousesFragment : Fragment()
 {
     //View model
-    private lateinit var viewModel: MainViewModel
+    private lateinit var viewModel: IMainViewModel
     //UI Stuff
     private var _binding: AllHousesFragmentBinding? = null
     private val binding get() = _binding!!
@@ -28,77 +28,58 @@ class AllHousesFragment : Fragment()
 
     private lateinit var layoutManager: LinearLayoutManager
     private var loading = false
-    private var pastVisibleItems = 0
-    private var visibleItemCount = 0
-    private var totalItemCount = 0
-
-//    private val generateHouses = false
 
     //region Listeners
-    private val onRecyclerViewScroll = object : RecyclerView.OnScrollListener()
-    {
-        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int)
-        {
-            if(dy > 0)
-            {
-                visibleItemCount = layoutManager.childCount
-                totalItemCount = layoutManager.itemCount
-                pastVisibleItems = layoutManager.findFirstVisibleItemPosition()
-
-                if(!loading)
-                {
-                    if ((visibleItemCount + pastVisibleItems) >= totalItemCount)
-                    {
-                        loading = true;
-                        Log.v("...", "Last Item Wow !");
-                        viewModel.loadMoreHouses()
-                    }
-                }
-            }
-        }
-    }
     private val onHouseCardClickedListener = object :
         OnHouseCardClickedListener
     {
-        override fun onHouseCardClicked(houseKey: String)
+        override fun onHouseCardClicked(houseId: Int)
         {
-            navigateToAddEditHouseFragment(houseKey)
+            navigateToAddEditHouseFragment(houseId)
         }
     }
     private val onAddHouseFabClicked = View.OnClickListener{
-        navigateToAddEditHouseFragment("")
+        navigateToAddEditHouseFragment(-1)
     }
     //endregion
 
+    override fun onCreate(savedInstanceState: Bundle?)
+    {
+        super.onCreate(savedInstanceState)
+        viewModel = ViewModelProviders.of(requireActivity(), InjectionUtils.provideMainViewModelFactory(requireActivity().application, context!!)).get(
+            MainViewModel::class.java)
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View
     {
-        _binding = AllHousesFragmentBinding.inflate(inflater, container, false)
+        try
+        {
+            _binding = AllHousesFragmentBinding.inflate(inflater, container, false)
+        }
+        catch (e: Exception)
+        {
+            e.printStackTrace()
+        }
         return binding.root
     }
     override fun onActivityCreated(savedInstanceState: Bundle?)
     {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(requireActivity(), InjectionUtils.provideMainViewModelFactory()).get(MainViewModel::class.java)
-
-        viewModel.resetPagination()
         observeHouses()
-        viewModel.loadMoreHouses()
         initUI()
     }
     override fun onDestroyView()
     {
         super.onDestroyView()
-        binding.housesRecyclerView.removeOnScrollListener(onRecyclerViewScroll)
         _binding = null
     }
 
     private fun observeHouses()
     {
-        viewModel.getHouses().observe(viewLifecycleOwner, androidx.lifecycle.Observer { houses ->
+        viewModel.getAllHouses().observe(viewLifecycleOwner, androidx.lifecycle.Observer { houses ->
             housesRecyclerViewAdapter.updateHouses(houses)
-            postUpdateHouses(houses.size < 1)
+            postUpdateHouses(houses.isEmpty())
             loading = false
         })
     }
@@ -115,7 +96,6 @@ class AllHousesFragment : Fragment()
     {
         housesRecyclerViewAdapter = HousesRecyclerViewAdapter(mutableListOf(), this, onHouseCardClickedListener)
         val housesRecyclerView = binding.housesRecyclerView
-        housesRecyclerView.addOnScrollListener(onRecyclerViewScroll)
         housesRecyclerView.adapter = housesRecyclerViewAdapter
         housesRecyclerView.addItemDecoration(MarginItemDecoration(16))
 
@@ -123,17 +103,17 @@ class AllHousesFragment : Fragment()
         housesRecyclerView.layoutManager = layoutManager
     }
 
-    private fun postUpdateHouses(noHouses: Boolean)
+    private fun postUpdateHouses(isEmpty: Boolean)
     {
         binding.loadingLayout.visibility = View.GONE
-        if(noHouses) binding.noHousesLayout.visibility = View.VISIBLE else binding.noHousesLayout.visibility = View.GONE
+        if(isEmpty) binding.noHousesLayout.visibility = View.VISIBLE else binding.noHousesLayout.visibility = View.GONE
     }
 
-    private fun navigateToAddEditHouseFragment(houseKey: String)
+    private fun navigateToAddEditHouseFragment(houseId: Int)
     {
         if(view != null)
         {
-            val direction = AllHousesFragmentDirections.toAddEditHouseFragment(houseKey)
+            val direction = AllHousesFragmentDirections.toAddEditHouseFragment(houseId)
             view!!.findNavController().navigate(direction)
         }
     }

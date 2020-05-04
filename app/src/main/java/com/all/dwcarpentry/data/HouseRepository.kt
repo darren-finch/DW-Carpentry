@@ -1,8 +1,10 @@
 package com.all.dwcarpentry.data
 
-import android.graphics.Bitmap
-import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.all.dwcarpentry.data.room.House
+import com.all.dwcarpentry.data.room.HouseDao
+import com.all.dwcarpentry.data.room.HouseDatabase
 
 /*
 * THE FOLLOWING OPERATIONS MUST BE PRESENT IN THE REPO
@@ -13,61 +15,30 @@ import androidx.lifecycle.LiveData
 * UPLOAD house image
 * DOWNLOAD house image
 * */
-class HouseRepository(private val firebaseDatabaseAccessor: FirebaseDatabaseAccessor, private val firebaseStorageAccessor: FirebaseStorageAccessor)
+class HouseRepository(private val houseDao: HouseDao) : IRepository
 {
-    //region Firebase Storage
-    suspend fun uploadHouseImages(images: List<Bitmap>, houseKey: String)
+    private val allHousesLiveData: LiveData<List<House>> = houseDao.getAllHouses()
+    private val currentHouseLiveData: MutableLiveData<House> = MutableLiveData()
+
+    override fun getAllHouses(): LiveData<List<House>>
     {
-        firebaseStorageAccessor.setListener(object : FirebaseStorageAccessor.Listener{
-            override fun onUploadedHouseImage(imageUrl: String, imageName: String)
-            {
-                Log.i("HouseRepository", "Inserting uploaded image into $houseKey")
-                firebaseDatabaseAccessor.insertHouseImageIntoDB(houseKey, imageUrl, imageName)
-            }
-        })
-        firebaseStorageAccessor.uploadHouseImages(images)
+        return allHousesLiveData
     }
-    //endregion
-    //region Firebase Database Operations
-    fun resetPagination()
+    override suspend fun getHouse(houseId: Int): LiveData<House>
     {
-        firebaseDatabaseAccessor.resetPagination()
+        currentHouseLiveData.postValue(houseDao.getHouse(houseId))
+        return currentHouseLiveData
     }
-    fun loadMoreHouses()
+    override suspend fun insertHouse(house: House)
     {
-        firebaseDatabaseAccessor.loadMoreHouses()
+        houseDao.insertHouse(house)
     }
-    fun getHouses() : LiveData<MutableList<House>>
+    override suspend fun updateHouse(house: House)
     {
-        return firebaseDatabaseAccessor.getHouses()
+        houseDao.updateHouse(house)
     }
-    fun getHouse(houseKey: String) : LiveData<House>
+    override suspend fun deleteHouse(house: House)
     {
-        return firebaseDatabaseAccessor.getHouse(houseKey)
+        houseDao.deleteHouse(house)
     }
-    fun generateHouses()
-    {
-        firebaseDatabaseAccessor.generateHouses()
-    }
-    fun insertHouse(house: House) : String
-    {
-        return firebaseDatabaseAccessor.insertHouse(house)
-    }
-    fun updateHouse(house: House, deletedImageNames: List<String>)
-    {
-        firebaseDatabaseAccessor.updateHouse(house)
-        firebaseStorageAccessor.deleteHouseImagesFromStorage(deletedImageNames)
-    }
-    fun deleteHouse(houseKey: String)
-    {
-        firebaseDatabaseAccessor.setListener(object : FirebaseDatabaseAccessor.Listener
-        {
-            override fun deletedHouse(deletedImageNames: List<String>)
-            {
-                firebaseStorageAccessor.deleteHouseImagesFromStorage(deletedImageNames)
-            }
-        })
-        firebaseDatabaseAccessor.deleteHouse(houseKey)
-    }
-    //endregion
 }

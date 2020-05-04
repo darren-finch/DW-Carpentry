@@ -9,31 +9,27 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
-import com.all.dwcarpentry.MainViewModel
 import com.all.dwcarpentry.R
-import com.all.dwcarpentry.data.House
+import com.all.dwcarpentry.data.room.House
 import com.all.dwcarpentry.databinding.AddEditHouseFragmentBinding
 import com.all.dwcarpentry.helpers.Constants
 import com.all.dwcarpentry.helpers.ImageUriTracker
 import com.all.dwcarpentry.helpers.InjectionUtils
-import com.bumptech.glide.Glide
-import kotlinx.coroutines.*
+import com.all.dwcarpentry.helpers.Utilities
+import com.all.dwcarpentry.viewmodels.IMainViewModel
+import com.all.dwcarpentry.viewmodels.MainViewModel
 
 class AddEditHouseFragment : Fragment()
 {
     //Data
     private val args: AddEditHouseFragmentArgs by navArgs()
-    private val viewModel: MainViewModel by lazy{
-        ViewModelProviders.of(requireActivity(), InjectionUtils.provideMainViewModelFactory()).get(MainViewModel::class.java)
-    }
+    private lateinit var viewModel: IMainViewModel
 
     private lateinit var houseData: House
     private var displayedHouseImages = mutableListOf<Bitmap>()
     private var imageUriTracker = ImageUriTracker()
-    private var deletedHouseImageNames = mutableListOf<String>()
     private var insertingHouse = false
 
     //UI Properties
@@ -49,8 +45,9 @@ class AddEditHouseFragment : Fragment()
     {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        viewModel = ViewModelProviders.of(requireActivity(), InjectionUtils.provideMainViewModelFactory(requireActivity().application, context!!)).get(
+            MainViewModel::class.java)
     }
-
     override fun onActivityCreated(savedInstanceState: Bundle?)
     {
         super.onActivityCreated(savedInstanceState)
@@ -68,7 +65,7 @@ class AddEditHouseFragment : Fragment()
                 {
                     val bm = MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, uri)
                     displayedHouseImages.add(bm)
-                    imageUriTracker.addNewImageUri(uri)
+                    imageUriTracker.addImageUri(uri)
                     imageUriTracker.setTotalImageListSize(displayedHouseImages.size)
                     setupCarousel()
                 }
@@ -86,11 +83,13 @@ class AddEditHouseFragment : Fragment()
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean
     {
+        saveHouse()
         when (item.itemId)
         {
-            R.id.saveButton -> if (insertingHouse) insertHouse() else updateHouse()
-            R.id.deleteButton -> deleteHouse()
+            R.id.saveButton -> if (insertingHouse) viewModel.insertHouse(houseData) else viewModel.updateHouse(houseData)
+            R.id.deleteButton -> viewModel.deleteHouse(houseData)
         }
+        navigateToAllHousesFragment()
         return false
     }
     override fun onDestroyView()
@@ -98,12 +97,13 @@ class AddEditHouseFragment : Fragment()
         super.onDestroyView()
         resetData()
     }
+
     private fun init()
     {
-        insertingHouse = args.houseKey.isEmpty()
+        insertingHouse = args.houseId < 0
         if (insertingHouse)
         {
-            houseData = House()
+            houseData = Utilities.getEmptyHouse()
             initUI()
         }
         else
@@ -111,21 +111,15 @@ class AddEditHouseFragment : Fragment()
     }
     private fun getHouse()
     {
-        viewModel.getHouse(args.houseKey).observe(viewLifecycleOwner, Observer { house ->
+        viewModel.getHouse(args.houseId).observe(viewLifecycleOwner, Observer { house ->
             houseData = house
             initUI()
-            if(houseData.homeImagesUrls.size > 0)
+            if(houseData.homeImagesUris.isNotEmpty())
                 loadImages()
         })
     }
     private fun resetData()
     {
-        houseData.homeAddress = ""
-        houseData.homeOwnerName = ""
-        houseData.materialsUsed = ""
-        houseData.homeImagesUrls = mutableListOf()
-        houseData.homeImagesNames = mutableListOf()
-
         displayedHouseImages.clear()
         imageUriTracker.clear()
 
@@ -139,53 +133,16 @@ class AddEditHouseFragment : Fragment()
     }
     private fun removeHouseImage(i: Int)
     {
-        val isNewImage = imageUriTracker.isNewImageUri(i)
         imageUriTracker.removeImageUri(i)
         if(i < displayedHouseImages.size)
             displayedHouseImages.removeAt(i)
 
-        if (!isNewImage)
-        {
-            val imageUrl = houseData.homeImagesUrls[i]
-            val imageName = houseData.homeImagesNames[i]
-            deletedHouseImageNames.add(imageName)
-            houseData.homeImagesUrls.remove(imageUrl)
-            houseData.homeImagesNames.remove(imageName)
-        }
         setupCarousel()
     }
     private fun loadImages()
     {
-        //TODO: If we ever create a refresh button, when loading images, clearing the entire house image list will erase all newly added images that haven't been uploaded yet. Change this.
-        displayedHouseImages.clear()
+        displayedHouseImages = houseData.homeImagesUris.map { uri -> MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, Uri.parse(uri)) } as MutableList<Bitmap>
         setupCarousel()
-
-        lifecycleScope.launch{
-            downloadImages()
-            withContext(Dispatchers.Main)
-            {
-                setupCarousel()
-            }
-        }
-    }
-    private suspend fun downloadImages()
-    {
-        try
-        {
-            withContext(Dispatchers.IO)
-            {
-                for(imageUrl in houseData.homeImagesUrls)
-                {
-                    val futureTarget = Glide.with(this@AddEditHouseFragment).asBitmap().load(imageUrl).submit()
-                    displayedHouseImages.add(futureTarget.get())
-                }
-            }
-        }
-        catch (e: java.lang.Exception)
-        {
-            e.printStackTrace()
-        }
-        imageUriTracker.setTotalImageListSize(displayedHouseImages.size)
     }
     private fun initUI()
     {
@@ -199,8 +156,8 @@ class AddEditHouseFragment : Fragment()
             if(displayedHouseImages.size > 0)
                 removeHouseImage(binding.homeImageCarousel.currentItem)
         }
-        if(houseData.homeImagesUrls.size < 1) binding.noImagesLayout.visibility = View.VISIBLE else binding.noImagesLayout.visibility = View.GONE
-        if(houseData.homeImagesUrls.size < 1) binding.imagesLoadingLayout.visibility = View.GONE else binding.imagesLoadingLayout.visibility = View.VISIBLE
+        if(houseData.homeImagesUris.isEmpty()) binding.noImagesLayout.visibility = View.VISIBLE else binding.noImagesLayout.visibility = View.GONE
+        if(houseData.homeImagesUris.isEmpty()) binding.imagesLoadingLayout.visibility = View.GONE else binding.imagesLoadingLayout.visibility = View.VISIBLE
     }
     private fun setupCarousel()
     {
@@ -209,44 +166,16 @@ class AddEditHouseFragment : Fragment()
         binding.homeImageCarousel.pageCount = displayedHouseImages.size
         binding.imagesLoadingLayout.visibility = View.GONE
     }
-    private fun insertHouse()
-    {
-        lifecycleScope.launch{
-            saveHouse()
-            val newHouseImages = imageUriTracker.getNewHouseImages()
-            val newHouseKey = viewModel.insertHouse(houseData)
-            withContext(Dispatchers.Main)
-            {
-                navigateToUploadingImagesFragment(newHouseKey, newHouseImages)
-            }
-        }
-    }
-    private fun updateHouse()
-    {
-        saveHouse()
-        val newHouseImages = imageUriTracker.getNewHouseImages()
-        viewModel.updateHouse(houseData, deletedHouseImageNames)
-        navigateToUploadingImagesFragment(args.houseKey, newHouseImages)
-    }
-    private fun deleteHouse()
-    {
-        viewModel.deleteHouse(houseData.key)
-        navigateToAllHousesFragment()
-    }
     private fun saveHouse()
     {
-        houseData.homeOwnerName = binding.homeOwnerEditText.text.toString()
-        houseData.homeAddress = binding.homeAddressEditText.text.toString()
-        houseData.materialsUsed = binding.materialsUsedEditText.text.toString()
-    }
-    //Returns only the images from the carousel that the user added. Not the ones that were downloaded.
-    private fun navigateToUploadingImagesFragment(houseKey: String, newHouseImages: Array<Uri>)
-    {
-        if(view != null)
-        {
-            val directions = AddEditHouseFragmentDirections.toUploadingImagesFragment(houseKey, newHouseImages)
-            view!!.findNavController().navigate(directions)
-        }
+        val houseId = houseData?.id
+        val newHouse = House(houseId,
+            binding.homeOwnerEditText.text.toString(),
+            binding.homeAddressEditText.text.toString(),
+            binding.materialsUsedEditText.text.toString(),
+            imageUriTracker.getImageUriStrings())
+
+        houseData = newHouse
     }
     private fun navigateToAllHousesFragment()
     {

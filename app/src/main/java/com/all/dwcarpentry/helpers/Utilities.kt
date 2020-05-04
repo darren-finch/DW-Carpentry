@@ -1,11 +1,12 @@
 package com.all.dwcarpentry.helpers
 
-import com.all.dwcarpentry.data.House
+import com.all.dwcarpentry.data.room.House
 
 object Utilities
 {
     fun getEmptyHouse() : House
     {
-        return House("", "No Homeowner", "123 Default Road", "5 - 2x4", mutableListOf(), mutableListOf())
+        return House(id = 0, homeOwnerName = "No Homeowner", homeAddress = "", materialsUsed = "",
+            homeImagesUris = mutableListOf())
     }
 }

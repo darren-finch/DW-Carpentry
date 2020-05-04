@@ -1,18 +1,21 @@
 package com.all.dwcarpentry.ui.recyclerviews
 
 import android.annotation.SuppressLint
+import android.content.ContentResolver
+import android.net.Uri
+import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.all.dwcarpentry.R
-import com.all.dwcarpentry.data.House
-import com.bumptech.glide.Glide
+import com.all.dwcarpentry.data.room.House
 
-class HouseViewHolder(itemView: View, onHouseCardClickedListener: OnHouseCardClickedListener) : RecyclerView.ViewHolder(itemView)
+class HouseViewHolder(itemView: View, onHouseCardClickedListener: OnHouseCardClickedListener, contentResolver: ContentResolver) : RecyclerView.ViewHolder(itemView)
 {
-    private lateinit var houseKey: String //Initialized in HousesRecyclerViewAdapter
+    private var houseId = -1 //Initialized in HousesRecyclerViewAdapter
+    private var myContentResolver: ContentResolver = contentResolver
     private val homeOwnerName: TextView = itemView.findViewById(R.id.homeOwner)
     private val homeAddress: TextView = itemView.findViewById(R.id.homeAddress)
     private val houseImage: ImageView = itemView.findViewById(R.id.houseImage)
@@ -23,25 +26,18 @@ class HouseViewHolder(itemView: View, onHouseCardClickedListener: OnHouseCardCli
         onClickListener = View.OnClickListener {
             val index = adapterPosition
             if (index != RecyclerView.NO_POSITION) onHouseCardClickedListener.onHouseCardClicked(
-                houseKey)
+                houseId)
         }
         itemView.setOnClickListener(onClickListener)
     }
 
     @SuppressLint("SetTextI18n")
-    fun bind(data: House, fragment: Fragment)
+    fun bind(data: House)
     {
-        houseKey = data.key
+        houseId = data.id
         homeOwnerName.text = "Home Owner - " + data.homeOwnerName
         homeAddress.text = "Lot Number/Address - " + data.homeAddress
-        try
-        {
-            if(data.homeImagesUrls.size > 0 && data.homeImagesUrls[0].isNotEmpty())
-                Glide.with(fragment).asBitmap().load(data.homeImagesUrls[0]).into(houseImage)
-        }
-        catch (e: Exception)
-        {
-            e.printStackTrace()
-        }
+//        if(data.homeImagesUris.isNotEmpty())
+//            houseImage.setImageBitmap(MediaStore.Images.Media.getBitmap(myContentResolver, Uri.parse(data.homeImagesUris[0])))
     }
 }
