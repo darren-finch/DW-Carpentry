@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.all.dwcarpentry.R
 import com.all.dwcarpentry.data.room.House
+import com.all.dwcarpentry.helpers.Utilities
 
 class HouseViewHolder(itemView: View, onHouseCardClickedListener: OnHouseCardClickedListener, contentResolver: ContentResolver) : RecyclerView.ViewHolder(itemView)
 {
@@ -37,7 +38,8 @@ class HouseViewHolder(itemView: View, onHouseCardClickedListener: OnHouseCardCli
         houseId = data.id
         homeOwnerName.text = "Home Owner - " + data.homeOwnerName
         homeAddress.text = "Lot Number/Address - " + data.homeAddress
-//        if(data.homeImagesUris.isNotEmpty())
-//            houseImage.setImageBitmap(MediaStore.Images.Media.getBitmap(myContentResolver, Uri.parse(data.homeImagesUris[0])))
+        if(data.homeImagesUris.isNotEmpty() && data.homeImagesUris[0].isNotEmpty())
+            houseImage.setImageBitmap(Utilities.getImageFromMediaStore(contentResolver = myContentResolver,
+                uri = Uri.parse(data.homeImagesUris[0])))
     }
 }

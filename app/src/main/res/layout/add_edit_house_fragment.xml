@@ -48,6 +48,7 @@
             android:id="@+id/imagesLoadingLayout"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/home_image_carousel"
             app:layout_constraintEnd_toEndOf="@+id/home_image_carousel"
             app:layout_constraintStart_toStartOf="@+id/home_image_carousel"

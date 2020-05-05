@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 class MainViewModel(application: Application, private val repo: IRepository) : AndroidViewModel(application), IMainViewModel
 {
     private val allHousesLiveData: LiveData<List<House>> = repo.getAllHouses()
-    private var currentHouseLiveData: LiveData<House> = MutableLiveData()
+    private var currentHouseLiveData: MutableLiveData<House> = MutableLiveData()
 
     override fun getAllHouses(): LiveData<List<House>>
     {
@@ -21,11 +21,8 @@ class MainViewModel(application: Application, private val repo: IRepository) : A
     }
     override fun getHouse(houseId: Int): LiveData<House>
     {
-        if(currentHouseLiveData.value != null && currentHouseLiveData.value!!.id == houseId)
-            return currentHouseLiveData
-
         viewModelScope.launch (Dispatchers.IO) {
-            currentHouseLiveData = repo.getHouse(houseId)
+            currentHouseLiveData.postValue(repo.getHouse(houseId))
         }
         return currentHouseLiveData
     }

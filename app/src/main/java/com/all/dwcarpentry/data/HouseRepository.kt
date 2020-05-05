@@ -18,16 +18,14 @@ import com.all.dwcarpentry.data.room.HouseDatabase
 class HouseRepository(private val houseDao: HouseDao) : IRepository
 {
     private val allHousesLiveData: LiveData<List<House>> = houseDao.getAllHouses()
-    private val currentHouseLiveData: MutableLiveData<House> = MutableLiveData()
 
     override fun getAllHouses(): LiveData<List<House>>
     {
         return allHousesLiveData
     }
-    override suspend fun getHouse(houseId: Int): LiveData<House>
+    override suspend fun getHouse(houseId: Int): House
     {
-        currentHouseLiveData.postValue(houseDao.getHouse(houseId))
-        return currentHouseLiveData
+        return houseDao.getHouse(houseId)
     }
     override suspend fun insertHouse(house: House)
     {

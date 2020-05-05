@@ -53,14 +53,7 @@ class AllHousesFragment : Fragment()
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View
     {
-        try
-        {
-            _binding = AllHousesFragmentBinding.inflate(inflater, container, false)
-        }
-        catch (e: Exception)
-        {
-            e.printStackTrace()
-        }
+        _binding = AllHousesFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
     override fun onActivityCreated(savedInstanceState: Bundle?)
@@ -78,6 +71,8 @@ class AllHousesFragment : Fragment()
     private fun observeHouses()
     {
         viewModel.getAllHouses().observe(viewLifecycleOwner, androidx.lifecycle.Observer { houses ->
+            println("Printing houseIds:")
+            houses.forEach { house -> println("${house.id}") }
             housesRecyclerViewAdapter.updateHouses(houses)
             postUpdateHouses(houses.isEmpty())
             loading = false
